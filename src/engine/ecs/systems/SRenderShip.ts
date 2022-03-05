@@ -4,18 +4,19 @@ import { CPosition } from '../components/CPosition';
 import { COrientation } from '../components/COrientation';
 import { CRenderer } from '../components/CRenderer';
 import { ISystem } from '../ISystem';
+import { CShip } from '../components/CShip';
 
 export class SRenderShip implements ISystem {
   name = 'RenderShip';
   priority = 2;
 
   onUpdate(ecs: ECSManager): void {
-    const entities = ecs.selectEntitiesFromComponents(['Ship', 'Position', 'Orientation', 'Renderer']);
+    const entities = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id, COrientation.id, CRenderer.id]);
 
     for (let entity of entities) {
-        const pos = entity.components.get('Position') as CPosition;
-        const orientation = entity.components.get('Orientation') as COrientation;
-        const renderer = entity.components.get('Orientation') as CRenderer;
+        const pos = entity.components.get(CPosition.id) as CPosition;
+        const orientation = entity.components.get(COrientation.id) as COrientation;
+        const renderer = entity.components.get(CRenderer.id) as CRenderer;
         this.render(pos.value, orientation.value, renderer);
     }
   }

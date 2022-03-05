@@ -7,7 +7,7 @@ export class SRenderArea implements ISystem {
   priority = 1;
 
   onUpdate(ecs: ECSManager): void {
-    const renderer = ecs.selectEntityFromId('Area')?.components.get('Renderer') as CRenderer;
+    const renderer = ecs.selectEntityFromId('Area')?.components.get(CRenderer.id) as CRenderer;
 
     const x = 0;
     const y = 0;

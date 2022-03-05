@@ -2,7 +2,8 @@ import { IComponent } from '../IComponent';
 import { Vect2D } from '../../utils/Vect2D';
 
 export class CPosition implements IComponent {
-  name = "Position";
+  public static id: string = "Position";
+  public id: string = CPosition.id;
 
   private _value: Vect2D;
     public get value(): Vect2D {

@@ -9,7 +9,8 @@ export interface IRenderAttributes {
 }
 
 export class CRenderer implements IComponent {
-  name = "Renderer";
+  public static id: string = "Renderer";
+  public id: string = CRenderer.id;
 
   private _attr: IRenderAttributes;
     public get attr(): IRenderAttributes {

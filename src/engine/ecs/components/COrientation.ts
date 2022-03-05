@@ -1,7 +1,8 @@
 import { IComponent } from '../IComponent';
 
 export class COrientation implements IComponent {
-  name = "Orientation";
+  public static id: string = "Orientation";
+  public id: string = COrientation.id;
 
   private _value: number;
     public get value(): number {

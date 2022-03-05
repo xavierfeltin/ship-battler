@@ -1,7 +1,8 @@
 import { IComponent } from '../IComponent';
 
 export class CRigidBody implements IComponent {
-  name = 'RigidBody';
+  public static id: string = 'RigidBody';
+  public id: string = CRigidBody.id;
 
   private _radius: number;
     public get radius(): number {

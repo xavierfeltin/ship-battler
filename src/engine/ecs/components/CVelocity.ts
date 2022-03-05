@@ -2,7 +2,8 @@ import { Vect2D } from '../../utils/Vect2D';
 import { IComponent } from '../IComponent';
 
 export class CVelocity implements IComponent {
-  name = "Velocity"
+  public static id: string = "Velocity";
+  public id: string = CVelocity.id;
 
   private _value: Vect2D;
     public get value(): Vect2D {

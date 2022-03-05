@@ -42,7 +42,7 @@ export class GameEngine {
 
     private addArea() {
         let components = new Map<string, IComponent>();
-        components.set(CRenderer.name, new CRenderer({
+        components.set(CRenderer.id, new CRenderer({
             width: this.ctx.canvas.width,
             height: this.ctx.canvas.height,
             color: "black",
@@ -53,17 +53,17 @@ export class GameEngine {
 
     private addTimeFrame() {
         let components = new Map<string, IComponent>();
-        components.set(CTimeFrame.name, new CTimeFrame());
+        components.set(CTimeFrame.id, new CTimeFrame());
         this.ecs.addUniqEntity('TimeFrame', components);
     }
 
     private addShip() {
         let components = new Map<string, IComponent>();
-        components.set(CShip.name, new CShip());
-        components.set(CPosition.name, new CPosition(new Vect2D(200, 200)));
-        components.set(COrientation.name, new COrientation(0));
-        components.set(CVelocity.name, new CVelocity(new Vect2D(0, 0)));
-        components.set(CRenderer.name, new CRenderer({
+        components.set(CShip.id, new CShip());
+        components.set(CPosition.id, new CPosition(new Vect2D(200, 200)));
+        components.set(COrientation.id, new COrientation(0));
+        components.set(CVelocity.id, new CVelocity(new Vect2D(10, 10)));
+        components.set(CRenderer.id, new CRenderer({
             width: 40,
             height: 40,
             sprite: ShipResources.GetSpriteBase64(),

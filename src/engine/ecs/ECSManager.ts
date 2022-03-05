@@ -38,7 +38,7 @@ export class ECSManager {
     }
 
     public addOrUpdateComponentOnEntity(entity: IEntity, component: IComponent) {
-        entity.components.set(component.name, component);
+        entity.components.set(component.id, component);
     }
 
     public addSystem(name: string, system: ISystem) {

@@ -1,7 +1,8 @@
 import { IComponent } from '../IComponent';
 
 export class CTimeFrame implements IComponent {
-  name = 'TimeFrame';
+  public static id: string = 'TimeFrame';
+  public id: string = CTimeFrame.id;
 
   private _time: number;
     public get time(): number {
