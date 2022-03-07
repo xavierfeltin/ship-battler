@@ -15,7 +15,6 @@ import { CTimeFrame } from "./ecs/components/CTimeFrame";
 import { CSpeed } from "./ecs/components/CSpeed";
 import { SOrientate } from "./ecs/systems/SOrientate";
 import { CPlanner } from "./ecs/components/CPlanner";
-import { Planner } from "./bot/Planner";
 import { SPlanify } from "./ecs/systems/SPlanify";
 
 export class GameEngine {
