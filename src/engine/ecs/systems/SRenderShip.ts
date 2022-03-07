@@ -7,8 +7,12 @@ import { ISystem } from '../ISystem';
 import { CShip } from '../components/CShip';
 
 export class SRenderShip implements ISystem {
-  name = 'RenderShip';
-  priority = 2;
+  public id = 'RenderShip';
+  public priority: number;
+
+  public constructor(priority: number) {
+    this.priority = priority;
+  }
 
   onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id, COrientation.id, CRenderer.id]);
@@ -17,7 +21,7 @@ export class SRenderShip implements ISystem {
         const pos = entity.components.get(CPosition.id) as CPosition;
         const orientation = entity.components.get(COrientation.id) as COrientation;
         const renderer = entity.components.get(CRenderer.id) as CRenderer;
-        this.render(pos.value, orientation.value, renderer);
+        this.render(pos.value, orientation.angle, renderer);
     }
   }
 

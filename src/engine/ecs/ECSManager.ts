@@ -41,6 +41,10 @@ export class ECSManager {
         entity.components.set(component.id, component);
     }
 
+    public removeComponentOnEntity(entity: IEntity, component: IComponent): void {
+        entity.components.delete(component.id);
+    }
+
     public addSystem(name: string, system: ISystem) {
         this.systems.set(name, system);
     }

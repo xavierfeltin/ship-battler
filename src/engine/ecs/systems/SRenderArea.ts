@@ -3,8 +3,12 @@ import { ECSManager } from '../ECSManager';
 import { CRenderer } from '../components/CRenderer';
 
 export class SRenderArea implements ISystem {
-  name = 'RenderArea';
-  priority = 1;
+  public id = 'RenderArea';
+  public priority: number;
+
+  public constructor(priority: number) {
+    this.priority = priority;
+}
 
   onUpdate(ecs: ECSManager): void {
     const renderer = ecs.selectEntityFromId('Area')?.components.get(CRenderer.id) as CRenderer;
