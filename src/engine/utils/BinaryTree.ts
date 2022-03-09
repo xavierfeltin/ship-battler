@@ -26,7 +26,7 @@ export class BinaryTree {
     public setLeft(node: IBTNode, root: number) {
         const leftIndexForRoot = this.nextLeftSideIndex(root);
 
-        if(this.values.get(root) === null){
+        if(this.values.get(root) === undefined){
             console.error("[BT Error] Can't set left child at " + leftIndexForRoot + " no parent found at " + root);
         }
         this.values.set(leftIndexForRoot, node);
@@ -35,7 +35,7 @@ export class BinaryTree {
     public setRight(node: IBTNode, root: number) {
         const rightIndexForRoot = this.nextRightSideIndex(root);
 
-        if(this.values.get(root) === null){
+        if(this.values.get(root) === undefined){
             console.error("[BT Error] Can't set right child at " + rightIndexForRoot + " no parent found at " + root);
         }
         this.values.set(rightIndexForRoot, node);
@@ -54,12 +54,12 @@ export class BinaryTree {
     }
 
     public prevRightSideIndex(root: number): number {
-        return (root * 2) / 2;
+        return (root - 2) / 2;
     }
 
     public popMin(): IBTNode {
         const min = this.values.get(this.minIndex);
-        this.minIndex = null;
+        this.values.delete(this.minIndex);
 
         if (this.minIndex === 0) {
             this.rebuildRightSide();
@@ -72,7 +72,7 @@ export class BinaryTree {
 
     public popMax(): IBTNode {
         const max = this.values.get(this.maxIndex);
-        this.maxIndex = null;
+        this.values.delete(this.maxIndex);
 
         if (this.maxIndex === 0) {
             this.rebuildLeftSide();
@@ -97,10 +97,10 @@ export class BinaryTree {
 
     public findRoot(node: IBTNode): number {
         let index: number = 0;
-        let isBottom = this.values.get(0) === null;
+        let isBottom = this.values.get(0) === undefined;
         while (!isBottom) {
             let nextIndex = node.value >= this.values.get(index).value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
                 index = nextIndex;
             }
             else {
@@ -115,7 +115,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextLeftSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
                 index = nextIndex;
             }
             else {
@@ -130,7 +130,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextRightSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
                 index = nextIndex;
             }
             else {
@@ -145,14 +145,20 @@ export class BinaryTree {
     }
 
     public rebuildRightSide(): void {
-        let minValue = this.values.get(0).value;
-        let maxValue = this.values.get(0).value;
+        this.minIndex = 0;
+        this.maxIndex = 0;
+        let minValue = this.values.get(2).value;
+        let maxValue = this.values.get(2).value;
 
-        this.values.forEach((node, key) => {
-            const newIndex = this.prevRightSideIndex(key);
-            this.values.set(newIndex,node);
-            this.values.delete(key);
+        let oldIndexes = Array.from(this.values.keys());
+        let newMap = new Map<number, IBTNode>();
+        for (let oldIndex of oldIndexes) {
+            //TODO fix issue where an newIndex = oldIndex and delete a node that has been moved already
 
+            const node = this.values.get(oldIndex);
+            const newIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
+            newMap.set(newIndex,node);
+            
             if (node.value < minValue) {
                 this.minIndex = newIndex;
                 minValue = node.value;
@@ -162,18 +168,23 @@ export class BinaryTree {
                 this.maxIndex = newIndex;
                 maxValue = node.value;
             }
-        });
+        }
+        this.values = newMap;
     }
 
     public rebuildLeftSide(): void {
-        let minValue = this.values.get(0).value;
-        let maxValue = this.values.get(0).value;
+        this.minIndex = 0;
+        this.maxIndex = 0;
+        let minValue = this.values.get(1).value;
+        let maxValue = this.values.get(1).value;
 
-        this.values.forEach((node, key) => {
-            const newIndex = this.prevLeftSideIndex(key);
-            this.values.set(newIndex,node);
-            this.values.delete(key);
-
+        let oldIndexes = Array.from(this.values.keys());
+        let newMap = new Map<number, IBTNode>();
+        for (let oldIndex of oldIndexes) {
+            const node = this.values.get(oldIndex);
+            const newIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
+            newMap.set(newIndex,node);
+            
             if (node.value < minValue) {
                 this.minIndex = newIndex;
                 minValue = node.value;
@@ -183,6 +194,7 @@ export class BinaryTree {
                 this.maxIndex = newIndex;
                 maxValue = node.value;
             }
-        });
+        }
+        this.values = newMap;
     }
 }

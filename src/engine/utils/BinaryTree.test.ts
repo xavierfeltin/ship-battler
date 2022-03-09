@@ -1,3 +1,4 @@
+
 import { BinaryTree, IBTNode } from "./BinaryTree";
 
 /*
@@ -30,25 +31,35 @@ test('Compute next left and right index', () => {
     expect(bt.nextRightSideIndex(5)).toBe(12);
 });
 
+test('Compute previous left and right index', () => {
+    const rootNode: IBTNode = {value: 100, object: 100};
+    const bt = new BinaryTree(rootNode);
+    expect(bt.prevLeftSideIndex(0)).toBe(0);
+    expect(bt.prevRightSideIndex(0)).toBe(0);
+
+    expect(bt.prevLeftSideIndex(3)).toBe(1);
+    expect(bt.prevRightSideIndex(5)).toBe(12);
+});
+
 test('Set left node', () => {
     const rootNode: IBTNode = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     bt.setLeft({value: 50, object: 50}, 0);
-    const btArray = bt.getBT();
+    const btMap = bt.getBT();
     expect(bt.getBT().size).toBe(2);
-    expect(btArray[0].value).toBe(100);
-    expect(btArray[1].value).toBe(50);
+    expect(btMap.get(0).value).toBe(100);
+    expect(btMap.get(1).value).toBe(50);
 });
 
 test('Set right node', () => {
     const rootNode: IBTNode = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     bt.setRight({value: 150, object: 150}, 0);
-    const btArray = bt.getBT();
+    const btMap = bt.getBT();
     expect(bt.getBT().size).toBe(2);
-    expect(btArray[0].value).toBe(100);
-    expect(btArray[1]).toBe(null);
-    expect(btArray[2].value).toBe(150);
+    expect(btMap.get(0).value).toBe(100);
+    expect(btMap.get(1)).toBe(undefined);
+    expect(btMap.get(2).value).toBe(150);
 });
 
 test('Find root index with only a root', () => {
@@ -91,11 +102,11 @@ test('Creating a simple binary tree with one level', () => {
     bt.addNode({value: 50, object: 50});
     bt.addNode({value: 150, object: 150});
 
-    const btArray = bt.getBT();
-    expect(btArray.size).toBe(3);
-    expect(btArray[0].value).toBe(100);
-    expect(btArray[1].value).toBe(50);
-    expect(btArray[2].value).toBe(150);
+    const btMap = bt.getBT();
+    expect(btMap.size).toBe(3);
+    expect(btMap.get(0).value).toBe(100);
+    expect(btMap.get(1).value).toBe(50);
+    expect(btMap.get(2).value).toBe(150);
 });
 
 test('Creating a simple unbalanced binary tree with three levels', () => {
@@ -116,7 +127,7 @@ test('Creating a simple unbalanced binary tree with three levels', () => {
     expect(btMap.get(3).value).toBe(20);
     expect(btMap.get(5).value).toBe(125);
     expect(btMap.get(6).value).toBe(200);
-    expect(btMap.get(7).value).toBe(110);
+    expect(btMap.get(11).value).toBe(110);
     expect(btMap.get(23).value).toBe(105);
 });
 
@@ -131,13 +142,21 @@ test('Pop min values from tree [100,50,20,150,125,110,105,200]', () => {
     bt.addNode({value: 20, object: 20});
 
     expect(bt.popMin().value).toBe(20);
+    expect(bt.getBT().size).toBe(7);
     expect(bt.popMin().value).toBe(50);
+    expect(bt.getBT().size).toBe(6);
     expect(bt.popMin().value).toBe(100);
+    expect(bt.getBT().size).toBe(5);
     expect(bt.popMin().value).toBe(105);
+    expect(bt.getBT().size).toBe(4);
     expect(bt.popMin().value).toBe(110);
+    expect(bt.getBT().size).toBe(3);
     expect(bt.popMin().value).toBe(125);
+    expect(bt.getBT().size).toBe(2);
     expect(bt.popMin().value).toBe(150);
+    expect(bt.getBT().size).toBe(1);
     expect(bt.popMin().value).toBe(200);
+    expect(bt.getBT().size).toBe(0);
 });
 /*
 test('Pop max values from tree [100,50,20,150,125,110,105,200]', () => {
