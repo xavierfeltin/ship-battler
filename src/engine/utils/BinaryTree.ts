@@ -20,7 +20,7 @@ export class BinaryTree {
 
     public root(node: IBTNode) {
         this.values.clear();//[];
-        this.values.set(node.value, node);
+        this.values.set(0, node);
     }
 
     public setLeft(node: IBTNode, root: number) {
@@ -29,7 +29,7 @@ export class BinaryTree {
         if(this.values.get(root) === null){
             console.error("[BT Error] Can't set left child at " + leftIndexForRoot + " no parent found at " + root);
         }
-        this.values.set(node.value, node);
+        this.values.set(leftIndexForRoot, node);
     }
 
     public setRight(node: IBTNode, root: number) {
@@ -38,7 +38,7 @@ export class BinaryTree {
         if(this.values.get(root) === null){
             console.error("[BT Error] Can't set right child at " + rightIndexForRoot + " no parent found at " + root);
         }
-        this.values.set(node.value, node);
+        this.values.set(rightIndexForRoot, node);
     }
 
     public nextLeftSideIndex(root: number): number {
