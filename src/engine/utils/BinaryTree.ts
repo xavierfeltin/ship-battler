@@ -4,59 +4,41 @@ export interface IBTNode {
 }
 
 export class BinaryTree {
-    private values: IBTNode[];
+    private values: Map<number, IBTNode>; //IBTNode[];
     private minIndex: number;
     private maxIndex: number;
 
     public constructor(node?: IBTNode) {
         if(node) {
-            this.values = [];
+            this.values = new Map();//[];
             this.root(node);
         }
         else {
-            this.values = [];
+            this.values = new Map();//[];
         }
     }
 
     public root(node: IBTNode) {
-        this.values = []; // Clean the BT beforehand
-        this.values.push(node);
+        this.values.clear();//[];
+        this.values.set(node.value, node);
     }
 
     public setLeft(node: IBTNode, root: number) {
         const leftIndexForRoot = this.nextLeftSideIndex(root);
 
-        if(this.values[root] === null){
+        if(this.values.get(root) === null){
             console.error("[BT Error] Can't set left child at " + leftIndexForRoot + " no parent found at " + root);
         }
-        else if (leftIndexForRoot < this.values.length) {
-            this.values[leftIndexForRoot] = node;
-        }
-        else {
-            while (this.values.length < leftIndexForRoot)
-            {
-                this.values.push(null);
-            }
-            this.values.push(node);
-        }
+        this.values.set(node.value, node);
     }
 
     public setRight(node: IBTNode, root: number) {
         const rightIndexForRoot = this.nextRightSideIndex(root);
 
-        if(this.values[root] === null){
+        if(this.values.get(root) === null){
             console.error("[BT Error] Can't set right child at " + rightIndexForRoot + " no parent found at " + root);
         }
-        else if (rightIndexForRoot < this.values.length) {
-            this.values[rightIndexForRoot] = node;
-        }
-        else {
-            while (this.values.length < rightIndexForRoot)
-            {
-                this.values.push(null);
-            }
-            this.values.push(node);
-        }
+        this.values.set(node.value, node);
     }
 
     public nextLeftSideIndex(root: number): number {
@@ -76,11 +58,11 @@ export class BinaryTree {
     }
 
     public popMin(): IBTNode {
-        const min = this.values[this.minIndex];
-        this.values[this.minIndex] = null;
+        const min = this.values.get(this.minIndex);
+        this.minIndex = null;
+
         if (this.minIndex === 0) {
-            this.values = this.values.slice(2); //if the root is removed it means the right element of the first level is the new root
-            this.minIndex = this.findNewMin();
+            this.rebuildRightSide();
         }
         else {
             this.minIndex = this.prevLeftSideIndex(this.minIndex);
@@ -89,11 +71,11 @@ export class BinaryTree {
     }
 
     public popMax(): IBTNode {
-        const max = this.values[this.maxIndex];
-        this.values[this.maxIndex] = null;
+        const max = this.values.get(this.maxIndex);
+        this.maxIndex = null;
+
         if (this.maxIndex === 0) {
-            this.values = this.values.slice(1); //if the root is removed it means the left element of the first level is the new root
-            this.maxIndex = this.findNewMax();
+            this.rebuildLeftSide();
         }
         else {
             this.maxIndex = this.prevRightSideIndex(this.maxIndex);
@@ -103,7 +85,7 @@ export class BinaryTree {
 
     public addNode(node: IBTNode) {
         const rootIndex = this.findRoot(node);
-        if (node.value > this.values[rootIndex].value) {
+        if (node.value > this.values.get(rootIndex).value) {
             this.setRight(node, rootIndex);
             this.maxIndex = this.nextRightSideIndex(rootIndex);
         }
@@ -115,10 +97,10 @@ export class BinaryTree {
 
     public findRoot(node: IBTNode): number {
         let index: number = 0;
-        let isBottom = false;
+        let isBottom = this.values.get(0) === null;
         while (!isBottom) {
-            let nextIndex = node.value >= this.values[index].value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
-            if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
+            let nextIndex = node.value >= this.values.get(index).value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
                 index = nextIndex;
             }
             else {
@@ -133,7 +115,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextLeftSideIndex(index);
-            if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
                 index = nextIndex;
             }
             else {
@@ -148,7 +130,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextRightSideIndex(index);
-            if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
+            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== null) {
                 index = nextIndex;
             }
             else {
@@ -158,7 +140,49 @@ export class BinaryTree {
         return index;
     }
 
-    public getBT(): IBTNode[] {
+    public getBT(): Map<number, IBTNode> {
         return this.values;
+    }
+
+    public rebuildRightSide(): void {
+        let minValue = this.values.get(0).value;
+        let maxValue = this.values.get(0).value;
+
+        this.values.forEach((node, key) => {
+            const newIndex = this.prevRightSideIndex(key);
+            this.values.set(newIndex,node);
+            this.values.delete(key);
+
+            if (node.value < minValue) {
+                this.minIndex = newIndex;
+                minValue = node.value;
+            }
+
+            if (node.value > maxValue) {
+                this.maxIndex = newIndex;
+                maxValue = node.value;
+            }
+        });
+    }
+
+    public rebuildLeftSide(): void {
+        let minValue = this.values.get(0).value;
+        let maxValue = this.values.get(0).value;
+
+        this.values.forEach((node, key) => {
+            const newIndex = this.prevLeftSideIndex(key);
+            this.values.set(newIndex,node);
+            this.values.delete(key);
+
+            if (node.value < minValue) {
+                this.minIndex = newIndex;
+                minValue = node.value;
+            }
+
+            if (node.value > maxValue) {
+                this.maxIndex = newIndex;
+                maxValue = node.value;
+            }
+        });
     }
 }
