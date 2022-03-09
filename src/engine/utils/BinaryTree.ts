@@ -60,22 +60,44 @@ export class BinaryTree {
     }
 
     public nextLeftSideIndex(root: number): number {
-        return (root * 2) + 1
+        return (root * 2) + 1;
     }
 
     public nextRightSideIndex(root: number): number {
         return (root * 2) + 2;
     }
 
+    public prevLeftSideIndex(root: number): number {
+        return (root - 1) / 2;
+    }
+
+    public prevRightSideIndex(root: number): number {
+        return (root * 2) / 2;
+    }
+
     public popMin(): IBTNode {
-        const min = this.values[this.minIndex].object;
+        const min = this.values[this.minIndex];
         this.values[this.minIndex] = null;
+        if (this.minIndex === 0) {
+            this.values = this.values.slice(2); //if the root is removed it means the right element of the first level is the new root
+            this.minIndex = this.findNewMin();
+        }
+        else {
+            this.minIndex = this.prevLeftSideIndex(this.minIndex);
+        }
         return min;
     }
 
     public popMax(): IBTNode {
-        const max = this.values[this.maxIndex].object;
+        const max = this.values[this.maxIndex];
         this.values[this.maxIndex] = null;
+        if (this.maxIndex === 0) {
+            this.values = this.values.slice(1); //if the root is removed it means the left element of the first level is the new root
+            this.maxIndex = this.findNewMax();
+        }
+        else {
+            this.maxIndex = this.prevRightSideIndex(this.maxIndex);
+        }
         return max;
     }
 
@@ -96,6 +118,36 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = node.value >= this.values[index].value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
+            if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
+                index = nextIndex;
+            }
+            else {
+                isBottom = true;
+            }
+        }
+        return index;
+    }
+
+    public findNewMin(): number {
+        let index: number = 0;
+        let isBottom = false;
+        while (!isBottom) {
+            let nextIndex = this.nextLeftSideIndex(index);
+            if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
+                index = nextIndex;
+            }
+            else {
+                isBottom = true;
+            }
+        }
+        return index;
+    }
+
+    public findNewMax(): number {
+        let index: number = 0;
+        let isBottom = false;
+        while (!isBottom) {
+            let nextIndex = this.nextRightSideIndex(index);
             if (nextIndex < this.values.length && this.values[nextIndex] !== null) {
                 index = nextIndex;
             }

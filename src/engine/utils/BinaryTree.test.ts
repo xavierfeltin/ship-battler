@@ -1,5 +1,14 @@
 import { BinaryTree, IBTNode } from "./BinaryTree";
 
+/*
+Global btree used for the unit test
+                100(0)
+		    50(1)		150(2)
+		20(3)		125(5)		200(6)
+				110(11)
+			105(23)
+*/
+
 test('Creating an empty binary tree', () => {
     const bt = new BinaryTree();
     expect(bt.getBT().length).toBe(0);
@@ -112,8 +121,49 @@ test('Creating a simple unbalanced binary tree with three levels', () => {
         expect(btArray[i]).toBe(null);
     }
     expect(btArray[11].value).toBe(110);
-    for (let i = 11; i <= 22; i++) {
+    for (let i = 12; i <= 22; i++) {
         expect(btArray[i]).toBe(null);
     }
     expect(btArray[23].value).toBe(105);
 });
+
+test('Pop min values from tree [100,50,20,150,125,110,105,200]', () => {
+    const bt = new BinaryTree({value: 100,object: 100});
+    bt.addNode({value: 50, object: 50});
+    bt.addNode({value: 150, object: 150});
+    bt.addNode({value: 125, object: 125});
+    bt.addNode({value: 200, object: 200});
+    bt.addNode({value: 110, object: 110});
+    bt.addNode({value: 105, object: 105});
+    bt.addNode({value: 20, object: 20});
+
+    expect(bt.popMin().value).toBe(20);
+    expect(bt.popMin().value).toBe(50);
+    expect(bt.popMin().value).toBe(100);
+    expect(bt.popMin().value).toBe(105);
+    expect(bt.popMin().value).toBe(110);
+    expect(bt.popMin().value).toBe(125);
+    expect(bt.popMin().value).toBe(150);
+    expect(bt.popMin().value).toBe(200);
+});
+/*
+test('Pop max values from tree [100,50,20,150,125,110,105,200]', () => {
+    const bt = new BinaryTree({value: 100,object: 100});
+    bt.addNode({value: 50, object: 50});
+    bt.addNode({value: 150, object: 150});
+    bt.addNode({value: 125, object: 125});
+    bt.addNode({value: 200, object: 200});
+    bt.addNode({value: 110, object: 110});
+    bt.addNode({value: 105, object: 105});
+    bt.addNode({value: 20, object: 20});
+
+    expect(bt.popMin().value).toBe(200);
+    expect(bt.popMin().value).toBe(150);
+    expect(bt.popMin().value).toBe(125);
+    expect(bt.popMin().value).toBe(110);
+    expect(bt.popMin().value).toBe(105);
+    expect(bt.popMin().value).toBe(100);
+    expect(bt.popMin().value).toBe(50);
+    expect(bt.popMin().value).toBe(20);
+});
+*/
