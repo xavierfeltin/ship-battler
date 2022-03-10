@@ -23,22 +23,27 @@ export class BinaryTree {
         this.values.set(0, node);
     }
 
-    public setLeft(node: IBTNode, root: number) {
+    public setLeft(node: IBTNode, root: number): number {
         const leftIndexForRoot = this.nextLeftSideIndex(root);
 
         if(this.values.get(root) === undefined){
             console.error("[BT Error] Can't set left child at " + leftIndexForRoot + " no parent found at " + root);
+            return -1;
         }
         this.values.set(leftIndexForRoot, node);
+        return leftIndexForRoot;
     }
 
-    public setRight(node: IBTNode, root: number) {
+    public setRight(node: IBTNode, root: number): number {
         const rightIndexForRoot = this.nextRightSideIndex(root);
 
         if(this.values.get(root) === undefined){
             console.error("[BT Error] Can't set right child at " + rightIndexForRoot + " no parent found at " + root);
+            return -1;
         }
+
         this.values.set(rightIndexForRoot, node);
+        return rightIndexForRoot;
     }
 
     public nextLeftSideIndex(root: number): number {
@@ -50,19 +55,19 @@ export class BinaryTree {
     }
 
     public prevLeftSideIndex(root: number): number {
-        return (root - 1) / 2;
+        return root === 0 ? 0 : (root - 1) / 2;
     }
 
     public prevRightSideIndex(root: number): number {
-        return (root - 2) / 2;
+        return root === 0 ? 0 : (root - 2) / 2;
     }
 
-    public popMin(): IBTNode {
+    public popMin(): IBTNode | undefined {
         const min = this.values.get(this.minIndex);
         this.values.delete(this.minIndex);
 
         if (this.minIndex === 0) {
-            this.rebuildRightSide();
+            this.rebuild();
         }
         else {
             this.minIndex = this.prevLeftSideIndex(this.minIndex);
@@ -70,12 +75,12 @@ export class BinaryTree {
         return min;
     }
 
-    public popMax(): IBTNode {
+    public popMax(): IBTNode | undefined {
         const max = this.values.get(this.maxIndex);
         this.values.delete(this.maxIndex);
 
         if (this.maxIndex === 0) {
-            this.rebuildLeftSide();
+            this.rebuild();
         }
         else {
             this.maxIndex = this.prevRightSideIndex(this.maxIndex);
@@ -85,6 +90,7 @@ export class BinaryTree {
 
     public addNode(node: IBTNode) {
         const rootIndex = this.findRoot(node);
+        
         if (node.value > this.values.get(rootIndex).value) {
             this.setRight(node, rootIndex);
             this.maxIndex = this.nextRightSideIndex(rootIndex);
@@ -144,57 +150,74 @@ export class BinaryTree {
         return this.values;
     }
 
-    public rebuildRightSide(): void {
+    public rebuild(): void {
         this.minIndex = 0;
         this.maxIndex = 0;
-        let minValue = this.values.get(2).value;
-        let maxValue = this.values.get(2).value;
+        let minValue: number = Infinity;
+        let maxValue: number = -Infinity;
 
-        let oldIndexes = Array.from(this.values.keys());
-        let newMap = new Map<number, IBTNode>();
-        for (let oldIndex of oldIndexes) {
-            //TODO fix issue where an newIndex = oldIndex and delete a node that has been moved already
+        let matchingIndexMap = new Map<Number,number>();
 
-            const node = this.values.get(oldIndex);
-            const newIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
-            newMap.set(newIndex,node);
-            
-            if (node.value < minValue) {
-                this.minIndex = newIndex;
-                minValue = node.value;
-            }
-
-            if (node.value > maxValue) {
-                this.maxIndex = newIndex;
-                maxValue = node.value;
-            }
-        }
-        this.values = newMap;
-    }
-
-    public rebuildLeftSide(): void {
-        this.minIndex = 0;
-        this.maxIndex = 0;
-        let minValue = this.values.get(1).value;
-        let maxValue = this.values.get(1).value;
-
-        let oldIndexes = Array.from(this.values.keys());
-        let newMap = new Map<number, IBTNode>();
+        const oldIndexes = Array.from(this.values.keys()).sort((a, b) => {return a-b});
+        //const newIndexes: number[] = []        
         for (let oldIndex of oldIndexes) {
             const node = this.values.get(oldIndex);
-            const newIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
-            newMap.set(newIndex,node);
-            
-            if (node.value < minValue) {
-                this.minIndex = newIndex;
-                minValue = node.value;
+
+            if (node === undefined) {
+                console.error("[BT rebuild] The node at " + oldIndex + " is undefined");
+                continue;
             }
 
-            if (node.value > maxValue) {
-                this.maxIndex = newIndex;
-                maxValue = node.value;
+            const parentIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
+            
+            if (parentIndex === 0) {
+                this.values.set(0, node);
+                this.values.delete(oldIndex); 
+                matchingIndexMap.set(oldIndex, 0);
+
+                if (node.value < minValue) {
+                    this.minIndex = 0;
+                    minValue = node.value;
+                }
+    
+                if (node.value > maxValue) {
+                    this.maxIndex = 0;
+                    maxValue = node.value;
+                }
             }
+            else {
+                const matchingIndex = matchingIndexMap.get(parentIndex);
+                if (node.value % 2 === 0 && matchingIndex !== undefined) {                    
+                    const newIndex = this.setRight(node, matchingIndex);
+                    this.values.delete(oldIndex); 
+                    matchingIndexMap.set(oldIndex, newIndex);
+                    
+                    if (node.value < minValue && newIndex !== undefined) {
+                        this.minIndex = newIndex;
+                        minValue = node.value;
+                    }
+        
+                    if (node.value > maxValue && newIndex !== undefined) {
+                        this.maxIndex = newIndex;
+                        maxValue = node.value;
+                    }
+                }
+                else if (matchingIndex !== undefined) {
+                    const newIndex = this.setLeft(node, matchingIndex);
+                    this.values.delete(oldIndex);
+                    matchingIndexMap.set(oldIndex, newIndex);
+                    
+                    if (node.value < minValue && newIndex !== undefined) {
+                        this.minIndex = newIndex;
+                        minValue = node.value;
+                    }
+        
+                    if (node.value > maxValue && newIndex !== undefined) {
+                        this.maxIndex = newIndex;
+                        maxValue = node.value;
+                    }
+                }
+            }                 
         }
-        this.values = newMap;
     }
 }

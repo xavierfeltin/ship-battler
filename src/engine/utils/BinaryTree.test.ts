@@ -28,7 +28,7 @@ test('Compute next left and right index', () => {
     expect(bt.nextRightSideIndex(0)).toBe(2);
 
     expect(bt.nextLeftSideIndex(5)).toBe(11);
-    expect(bt.nextRightSideIndex(5)).toBe(12);
+    expect(bt.nextRightSideIndex(6)).toBe(14);
 });
 
 test('Compute previous left and right index', () => {
@@ -38,7 +38,10 @@ test('Compute previous left and right index', () => {
     expect(bt.prevRightSideIndex(0)).toBe(0);
 
     expect(bt.prevLeftSideIndex(3)).toBe(1);
-    expect(bt.prevRightSideIndex(5)).toBe(12);
+    expect(bt.prevLeftSideIndex(5)).toBe(2);
+    expect(bt.prevRightSideIndex(6)).toBe(2);
+    expect(bt.prevLeftSideIndex(23)).toBe(11);
+    expect(bt.prevRightSideIndex(14)).toBe(6);
 });
 
 test('Set left node', () => {
