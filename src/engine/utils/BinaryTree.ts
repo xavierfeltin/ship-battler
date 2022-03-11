@@ -112,14 +112,14 @@ export class BinaryTree {
 
     public findRoot(node: IBTNode): number {
         let index: number = 0;
-        let isBottom = this.values.has(0);
-        while (!isBottom) {
+        let rootFound = false;
+        while (!rootFound) {
             let nextIndex = node.value >= this.values.get(index).value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
             if (this.values.has(nextIndex)) {
                 index = nextIndex;
             }
             else {
-                isBottom = true;
+                rootFound = true;
             }
         }
         return index;
