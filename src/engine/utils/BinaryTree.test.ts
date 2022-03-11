@@ -161,7 +161,7 @@ test('Pop min values from tree [100,50,20,150,125,110,105,200]', () => {
     expect(bt.popMin().value).toBe(200);
     expect(bt.getBT().size).toBe(0);
 });
-/*
+
 test('Pop max values from tree [100,50,20,150,125,110,105,200]', () => {
     const bt = new BinaryTree({value: 100,object: 100});
     bt.addNode({value: 50, object: 50});
@@ -172,13 +172,12 @@ test('Pop max values from tree [100,50,20,150,125,110,105,200]', () => {
     bt.addNode({value: 105, object: 105});
     bt.addNode({value: 20, object: 20});
 
-    expect(bt.popMin().value).toBe(200);
-    expect(bt.popMin().value).toBe(150);
-    expect(bt.popMin().value).toBe(125);
-    expect(bt.popMin().value).toBe(110);
-    expect(bt.popMin().value).toBe(105);
-    expect(bt.popMin().value).toBe(100);
-    expect(bt.popMin().value).toBe(50);
-    expect(bt.popMin().value).toBe(20);
+    expect(bt.popMax().value).toBe(200);
+    expect(bt.popMax().value).toBe(150);
+    expect(bt.popMax().value).toBe(125);
+    expect(bt.popMax().value).toBe(110);
+    expect(bt.popMax().value).toBe(105);
+    expect(bt.popMax().value).toBe(100);
+    expect(bt.popMax().value).toBe(50);
+    expect(bt.popMax().value).toBe(20);
 });
-*/

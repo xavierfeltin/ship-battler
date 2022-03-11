@@ -26,7 +26,7 @@ export class BinaryTree {
     public setLeft(node: IBTNode, root: number): number {
         const leftIndexForRoot = this.nextLeftSideIndex(root);
 
-        if(this.values.get(root) === undefined){
+        if(!this.values.has(root)){
             console.error("[BT Error] Can't set left child at " + leftIndexForRoot + " no parent found at " + root);
             return -1;
         }
@@ -37,7 +37,7 @@ export class BinaryTree {
     public setRight(node: IBTNode, root: number): number {
         const rightIndexForRoot = this.nextRightSideIndex(root);
 
-        if(this.values.get(root) === undefined){
+        if(!this.values.has(root)){
             console.error("[BT Error] Can't set right child at " + rightIndexForRoot + " no parent found at " + root);
             return -1;
         }
@@ -65,9 +65,11 @@ export class BinaryTree {
     public popMin(): IBTNode | undefined {
         const min = this.values.get(this.minIndex);
         this.values.delete(this.minIndex);
+        const nextLeftIndex = this.nextLeftSideIndex(this.minIndex);
+        const nextRightIndex = this.nextRightSideIndex(this.minIndex);
 
-        if (this.minIndex === 0) {
-            this.rebuild();
+        if (this.values.has(nextLeftIndex) || this.values.has(nextRightIndex)) {
+            this.rebuild(this.minIndex);
         }
         else {
             this.minIndex = this.prevLeftSideIndex(this.minIndex);
@@ -78,9 +80,12 @@ export class BinaryTree {
     public popMax(): IBTNode | undefined {
         const max = this.values.get(this.maxIndex);
         this.values.delete(this.maxIndex);
+        const nextLeftIndex = this.nextLeftSideIndex(this.maxIndex);
+        const nextRightIndex = this.nextRightSideIndex(this.maxIndex);
 
-        if (this.maxIndex === 0) {
-            this.rebuild();
+        if (this.values.has(nextLeftIndex) || this.values.has(nextRightIndex)) {
+             // Need to rebuild if the popped element is a root of a subbranch
+            this.rebuild(this.maxIndex);
         }
         else {
             this.maxIndex = this.prevRightSideIndex(this.maxIndex);
@@ -89,8 +94,12 @@ export class BinaryTree {
     }
 
     public addNode(node: IBTNode) {
+        if (this.values.size === 0) {
+            this.root(node);
+            return;
+        }
+
         const rootIndex = this.findRoot(node);
-        
         if (node.value > this.values.get(rootIndex).value) {
             this.setRight(node, rootIndex);
             this.maxIndex = this.nextRightSideIndex(rootIndex);
@@ -103,10 +112,10 @@ export class BinaryTree {
 
     public findRoot(node: IBTNode): number {
         let index: number = 0;
-        let isBottom = this.values.get(0) === undefined;
+        let isBottom = this.values.has(0);
         while (!isBottom) {
             let nextIndex = node.value >= this.values.get(index).value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
+            if (this.values.has(nextIndex)) {
                 index = nextIndex;
             }
             else {
@@ -121,7 +130,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextLeftSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
+            if (this.values.has(nextIndex)) {
                 index = nextIndex;
             }
             else {
@@ -136,7 +145,7 @@ export class BinaryTree {
         let isBottom = false;
         while (!isBottom) {
             let nextIndex = this.nextRightSideIndex(index);
-            if (this.values.has(nextIndex) && this.values.get(nextIndex) !== undefined) {
+            if (this.values.has(nextIndex)) {
                 index = nextIndex;
             }
             else {
@@ -150,74 +159,45 @@ export class BinaryTree {
         return this.values;
     }
 
-    public rebuild(): void {
+    public rebuild(root: number): void {
         this.minIndex = 0;
         this.maxIndex = 0;
         let minValue: number = Infinity;
         let maxValue: number = -Infinity;
 
-        let matchingIndexMap = new Map<Number,number>();
+        const nodesToMove = this.extractNodesFromRoot(root);
+        nodesToMove.forEach((node, idx) => {
+            this.addNode(node);
+        });
+    }
 
-        const oldIndexes = Array.from(this.values.keys()).sort((a, b) => {return a-b});
-        //const newIndexes: number[] = []        
-        for (let oldIndex of oldIndexes) {
-            const node = this.values.get(oldIndex);
+    public extractNodesFromRoot(root: number): IBTNode[] {
+        let nodes: IBTNode[] = [];
+        let queue: number[] = [root];
+        let dfsIndexes: number[] = [];
 
-            if (node === undefined) {
-                console.error("[BT rebuild] The node at " + oldIndex + " is undefined");
-                continue;
+        // Get nodes in their appearance order
+        while(queue.length > 0) {
+            const currentIndex = queue.pop();
+            const leftIndex = this.nextLeftSideIndex(currentIndex);
+            const rightIndex = this.nextRightSideIndex(currentIndex);
+
+            if(this.values.has(leftIndex)) {
+                queue.push(leftIndex);
+                nodes.push(this.values.get(leftIndex));
             }
 
-            const parentIndex = (oldIndex % 2) === 0 ? this.prevRightSideIndex(oldIndex) : this.prevLeftSideIndex(oldIndex);
-            
-            if (parentIndex === 0) {
-                this.values.set(0, node);
-                this.values.delete(oldIndex); 
-                matchingIndexMap.set(oldIndex, 0);
-
-                if (node.value < minValue) {
-                    this.minIndex = 0;
-                    minValue = node.value;
-                }
-    
-                if (node.value > maxValue) {
-                    this.maxIndex = 0;
-                    maxValue = node.value;
-                }
+            if (this.values.has(rightIndex)) {
+                queue.push(rightIndex);
+                nodes.push(this.values.get(rightIndex));
             }
-            else {
-                const matchingIndex = matchingIndexMap.get(parentIndex);
-                if (node.value % 2 === 0 && matchingIndex !== undefined) {                    
-                    const newIndex = this.setRight(node, matchingIndex);
-                    this.values.delete(oldIndex); 
-                    matchingIndexMap.set(oldIndex, newIndex);
-                    
-                    if (node.value < minValue && newIndex !== undefined) {
-                        this.minIndex = newIndex;
-                        minValue = node.value;
-                    }
-        
-                    if (node.value > maxValue && newIndex !== undefined) {
-                        this.maxIndex = newIndex;
-                        maxValue = node.value;
-                    }
-                }
-                else if (matchingIndex !== undefined) {
-                    const newIndex = this.setLeft(node, matchingIndex);
-                    this.values.delete(oldIndex);
-                    matchingIndexMap.set(oldIndex, newIndex);
-                    
-                    if (node.value < minValue && newIndex !== undefined) {
-                        this.minIndex = newIndex;
-                        minValue = node.value;
-                    }
-        
-                    if (node.value > maxValue && newIndex !== undefined) {
-                        this.maxIndex = newIndex;
-                        maxValue = node.value;
-                    }
-                }
-            }                 
         }
+
+        // Clean subtree in reverse order
+        dfsIndexes.forEach((index) => {
+            this.values.delete(index);
+        });
+
+        return nodes;
     }
 }
