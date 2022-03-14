@@ -102,11 +102,19 @@ export class BinaryTree {
         const rootIndex = this.findRoot(node);
         if (node.value > this.values.get(rootIndex).value) {
             this.setRight(node, rootIndex);
-            this.maxIndex = this.nextRightSideIndex(rootIndex);
+
+            const indexNewNode = this.nextRightSideIndex(rootIndex);
+            if (!this.values.has(this.maxIndex) || this.values.get(indexNewNode)?.value > this.values.get(this.maxIndex)?.value) {
+                this.maxIndex = indexNewNode;
+            }
         }
         else {
             this.setLeft(node, rootIndex);
-            this.minIndex = this.nextLeftSideIndex(rootIndex);
+
+            const indexNewNode = this.nextLeftSideIndex(rootIndex);
+            if (!this.values.has(this.minIndex) || this.values.get(indexNewNode)?.value < this.values.get(this.minIndex)?.value) {
+                this.minIndex = indexNewNode;
+            }
         }
     }
 
@@ -162,8 +170,6 @@ export class BinaryTree {
     public rebuild(root: number): void {
         this.minIndex = 0;
         this.maxIndex = 0;
-        let minValue: number = Infinity;
-        let maxValue: number = -Infinity;
 
         const nodesToMove = this.extractNodesFromRoot(root);
         nodesToMove.forEach((node, idx) => {
@@ -185,11 +191,13 @@ export class BinaryTree {
             if(this.values.has(leftIndex)) {
                 queue.push(leftIndex);
                 nodes.push(this.values.get(leftIndex));
+                dfsIndexes.push(leftIndex);
             }
 
             if (this.values.has(rightIndex)) {
                 queue.push(rightIndex);
                 nodes.push(this.values.get(rightIndex));
+                dfsIndexes.push(rightIndex);
             }
         }
 
