@@ -1,29 +1,36 @@
-export interface IBTNode {
+export interface IBTNode<T>{
     value: number;
-    object: any;
+    object: T;
 }
 
-export class BinaryTree {
-    private values: Map<number, IBTNode>; //IBTNode[];
+export class BinaryTree<T> {
+    private values: Map<number, IBTNode<T>>; //IBTNode[];
     private minIndex: number;
     private maxIndex: number;
 
-    public constructor(node?: IBTNode) {
+    public constructor(node?: IBTNode<T>) {
+        this.minIndex = 0;
+        this.maxIndex = 0;
+
         if(node) {
-            this.values = new Map();//[];
+            this.values = new Map();
             this.root(node);
         }
         else {
-            this.values = new Map();//[];
+            this.values = new Map();
         }
     }
 
-    public root(node: IBTNode) {
+    public empty(): boolean {
+        return this.values.size === 0;
+    }
+
+    public root(node: IBTNode<T>) {
         this.values.clear();//[];
         this.values.set(0, node);
     }
 
-    public setLeft(node: IBTNode, root: number): number {
+    public setLeft(node: IBTNode<T>, root: number): number {
         const leftIndexForRoot = this.nextLeftSideIndex(root);
 
         if(!this.values.has(root)){
@@ -34,7 +41,7 @@ export class BinaryTree {
         return leftIndexForRoot;
     }
 
-    public setRight(node: IBTNode, root: number): number {
+    public setRight(node: IBTNode<T>, root: number): number {
         const rightIndexForRoot = this.nextRightSideIndex(root);
 
         if(!this.values.has(root)){
@@ -62,7 +69,11 @@ export class BinaryTree {
         return root === 0 ? 0 : (root - 2) / 2;
     }
 
-    public popMin(): IBTNode | undefined {
+    public popMin(): IBTNode<T> | undefined {
+        if (this.empty()) {
+            return undefined;
+        }
+
         const min = this.values.get(this.minIndex);
         this.values.delete(this.minIndex);
         const nextLeftIndex = this.nextLeftSideIndex(this.minIndex);
@@ -77,7 +88,11 @@ export class BinaryTree {
         return min;
     }
 
-    public popMax(): IBTNode | undefined {
+    public popMax(): IBTNode<T> | undefined {
+        if (this.empty()) {
+            return undefined;
+        }
+
         const max = this.values.get(this.maxIndex);
         this.values.delete(this.maxIndex);
         const nextLeftIndex = this.nextLeftSideIndex(this.maxIndex);
@@ -93,7 +108,7 @@ export class BinaryTree {
         return max;
     }
 
-    public addNode(node: IBTNode) {
+    public addNode(node: IBTNode<T>) {
         if (this.values.size === 0) {
             this.root(node);
             return;
@@ -118,7 +133,7 @@ export class BinaryTree {
         }
     }
 
-    public findRoot(node: IBTNode): number {
+    public findRoot(node: IBTNode<T>): number {
         let index: number = 0;
         let rootFound = false;
         while (!rootFound) {
@@ -163,7 +178,7 @@ export class BinaryTree {
         return index;
     }
 
-    public getBT(): Map<number, IBTNode> {
+    public getBT(): Map<number, IBTNode<T>> {
         return this.values;
     }
 
@@ -177,8 +192,8 @@ export class BinaryTree {
         });
     }
 
-    public extractNodesFromRoot(root: number): IBTNode[] {
-        let nodes: IBTNode[] = [];
+    public extractNodesFromRoot(root: number): IBTNode<T>[] {
+        let nodes: IBTNode<T>[] = [];
         let queue: number[] = [root];
         let dfsIndexes: number[] = [];
 

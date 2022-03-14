@@ -16,13 +16,13 @@ test('Creating an empty binary tree', () => {
 });
 
 test('Creating a binary tree with a root', () => {
-    const rootNode: IBTNode = {value: 100, object: 100};
+    const rootNode: IBTNode<number> = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     expect(bt.getBT().size).toBe(1);
 });
 
 test('Compute next left and right index', () => {
-    const rootNode: IBTNode = {value: 100, object: 100};
+    const rootNode: IBTNode<number> = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     expect(bt.nextLeftSideIndex(0)).toBe(1);
     expect(bt.nextRightSideIndex(0)).toBe(2);
@@ -32,7 +32,7 @@ test('Compute next left and right index', () => {
 });
 
 test('Compute previous left and right index', () => {
-    const rootNode: IBTNode = {value: 100, object: 100};
+    const rootNode: IBTNode<number> = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     expect(bt.prevLeftSideIndex(0)).toBe(0);
     expect(bt.prevRightSideIndex(0)).toBe(0);
@@ -45,7 +45,7 @@ test('Compute previous left and right index', () => {
 });
 
 test('Set left node', () => {
-    const rootNode: IBTNode = {value: 100, object: 100};
+    const rootNode: IBTNode<number> = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     bt.setLeft({value: 50, object: 50}, 0);
     const btMap = bt.getBT();
@@ -55,7 +55,7 @@ test('Set left node', () => {
 });
 
 test('Set right node', () => {
-    const rootNode: IBTNode = {value: 100, object: 100};
+    const rootNode: IBTNode<number> = {value: 100, object: 100};
     const bt = new BinaryTree(rootNode);
     bt.setRight({value: 150, object: 150}, 0);
     const btMap = bt.getBT();
