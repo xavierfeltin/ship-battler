@@ -17,6 +17,10 @@ export class Vect2D {
         return new Vect2D(v1.x - v2.x, v1.y - v2.y);
     }
 
+    public key(): string {
+        return this.x + "-" + this.y;
+    }
+
     public setV(v: Vect2D) {
         this.x = v.x;
         this.y = v.y;

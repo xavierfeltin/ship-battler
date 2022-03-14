@@ -3,22 +3,22 @@ import { Vect2D } from "./Vect2D";
 export class GridWithWeights {
     private width: number;
     private height: number;
-    private weigths: Map<Vect2D, number>;
+    private weigths: Map<string, number>;
 
-    public constructor(width: number, height: number, weights?: Map<Vect2D, number>) {
+    public constructor(width: number, height: number, weights?: Map<string, number>) {
         this.width = width;
         this.height = height;
 
         this.weigths = new Map();
         if (weights) {
             weights.forEach((weight, position, map) => {
-                this.weigths.set(new Vect2D(position.x, position.y), weight);
+                this.weigths.set(position, weight);
             })
         }
     }
 
     public cost(to: Vect2D): number {
-        const weight = this.weigths.get(to);
+        const weight = this.weigths.get(to.key());
         return weight === undefined ? 0 : weight;
     }
 
@@ -39,9 +39,14 @@ export class GridWithWeights {
             new Vect2D(location.x, location.y + 1),
             new Vect2D(location.x + 1, location.y - 1),
             new Vect2D(location.x - 1, location.y + 1),
-            new Vect2D(location.x - 1, location.y - 1)
+            new Vect2D(location.x - 1, location.y - 1),
+            new Vect2D(location.x + 1, location.y + 1)
         ];
 
         return neighbors.filter((location) => this.isInBounds(location) && this.isPassable(location));
+    }
+
+    public size(): number {
+        return this.width * this.height;
     }
 }
