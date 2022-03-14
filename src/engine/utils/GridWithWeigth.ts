@@ -19,7 +19,7 @@ export class GridWithWeights {
 
     public cost(to: Vect2D): number {
         const weight = this.weigths.get(to.key());
-        return weight === undefined ? 0 : weight;
+        return weight === undefined ? 1 : weight;
     }
 
     public isInBounds(location: Vect2D): boolean {
@@ -28,7 +28,7 @@ export class GridWithWeights {
 
     public isPassable(location: Vect2D): boolean {
         const cost = this.cost(location);
-        return cost === 0;
+        return cost === 1;
     }
 
     public neighbors(location: Vect2D): Vect2D[] {

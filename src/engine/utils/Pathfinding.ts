@@ -1,3 +1,4 @@
+import path from "path";
 import { GridWithWeights } from "./GridWithWeigth";
 import { PriorityQueue } from "./PriorityQueue";
 import { Vect2D } from "./Vect2D";
@@ -8,12 +9,12 @@ export class PathFinding {
     }
 
     // A* from https://www.redblobgames.com/pathfinding/a-star/implementation.html
-    public static aStarSearch(graph: GridWithWeights, start: Vect2D, target: Vect2D): {cameFrom: Map<Vect2D, Vect2D | undefined>, costSoFar: Map<Vect2D, number>} {
+    public static aStarSearch(graph: GridWithWeights, start: Vect2D, target: Vect2D): {cameFrom: Map<string, Vect2D | undefined>, costSoFar: Map<string, number>} {
         let toVisit = new PriorityQueue<Vect2D>();
         toVisit.push(0, start);
 
-        let cameFrom = new Map<Vect2D, Vect2D | undefined>();
-        let costSoFar = new Map<Vect2D, number>();
+        let cameFrom = new Map<string, Vect2D | undefined>();
+        let costSoFar = new Map<string, number>();
 
         while (!toVisit.empty()) {
             const current: Vect2D | undefined = toVisit.pop();
@@ -31,20 +32,20 @@ export class PathFinding {
 
             let neighbors = graph.neighbors(current);
             neighbors.forEach((next) => {
-                let costSoFarForCurrent = costSoFar.get(current);
+                let costSoFarForCurrent = costSoFar.get(current.key());
                 const currentCostSoFar = costSoFarForCurrent === undefined ? 0 : costSoFarForCurrent;
 
-                let costSoFarForNext = costSoFar.get(next);
+                let costSoFarForNext = costSoFar.get(next.key());
                 const nextCostSoFar = costSoFarForNext === undefined ? 0 : costSoFarForNext;
 
                 const newCost = currentCostSoFar + graph.cost(next);
-                if (!costSoFar.has(next) || newCost < nextCostSoFar) {
-                    costSoFar.set(next, newCost);
+                if (!costSoFar.has(next.key()) || newCost < nextCostSoFar) {
+                    costSoFar.set(next.key(), newCost);
 
                     // Visit first the path we supposed the less costly
                     const priority = newCost + this.manhattanDistance(next, target);
                     toVisit.push(priority, next);
-                    cameFrom.set(next, current);
+                    cameFrom.set(next.key(), current);
                 }
             })
         }
@@ -53,5 +54,24 @@ export class PathFinding {
             cameFrom: cameFrom,
             costSoFar: costSoFar
         };
+    }
+
+    public static reconstructPath(cameFrom: Map<string, Vect2D | undefined>, start: Vect2D, target: Vect2D): Vect2D[] {
+        let current = target;
+        const path: Vect2D[] = [];
+        const startKey = start.key();
+
+        while (current.key() !== startKey) {
+            path.push(current);
+            const cur = cameFrom.get(current.key());
+            if (cur !== undefined) {
+                current = cur;
+            }
+            else {
+                console.warn("A step in the path being reconstructed is undefined. The path may not be fully correct.");
+            }
+        }
+        path.push(start);
+        return path.reverse();
     }
 }
