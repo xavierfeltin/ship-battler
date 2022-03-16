@@ -2,12 +2,12 @@ import { GridWithWeights } from "./GridWithWeigth";
 import { Vect2D } from "./Vect2D";
 
 test('Creating a 3x3 grid', () => {
-    const grid = new GridWithWeights(3, 3);
+    const grid = new GridWithWeights(3, 3, 1);
     expect(grid.size()).toBe(9);
 });
 
 test('Getting neighbors of 1,1 in a 3x3 grid', () => {
-    const grid = new GridWithWeights(3, 3);
+    const grid = new GridWithWeights(3, 3, 1);
     const current = new Vect2D(1, 1);
 
     const expectedNeighbors = [
@@ -30,7 +30,7 @@ test('Getting neighbors of 1,1 in a 3x3 grid', () => {
 });
 
 test('Filter out of boundaries neighbors of a 0,0 in a 3x3 grid', () => {
-    const grid = new GridWithWeights(3, 3);
+    const grid = new GridWithWeights(3, 3, 1);
     const current = new Vect2D(0, 0);
 
     const expectedNeighbors = [
@@ -49,9 +49,9 @@ test('Filter out of boundaries neighbors of a 0,0 in a 3x3 grid', () => {
 
 test('Filter out unpassable nodes in a 3x3 grid', () => {
     const unpassableNodes = new Map<string, number>();
-    unpassableNodes.set("1-0", 1);
-    unpassableNodes.set("2-0", 1);
-    const grid = new GridWithWeights(3, 3, unpassableNodes);
+    unpassableNodes.set("1-0", -1);
+    unpassableNodes.set("2-0", -1);
+    const grid = new GridWithWeights(3, 3, 1, unpassableNodes);
 
     const current = new Vect2D(1, 1);
 

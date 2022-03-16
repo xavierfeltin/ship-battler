@@ -38,7 +38,7 @@ export class PathFinding {
                 let costSoFarForNext = costSoFar.get(next.key());
                 const nextCostSoFar = costSoFarForNext === undefined ? 0 : costSoFarForNext;
 
-                const newCost = currentCostSoFar + graph.cost(next);
+                const newCost = currentCostSoFar + graph.cost(current, next);
                 if (!costSoFar.has(next.key()) || newCost < nextCostSoFar) {
                     costSoFar.set(next.key(), newCost);
 
@@ -56,7 +56,7 @@ export class PathFinding {
         };
     }
 
-    public static reconstructPath(cameFrom: Map<string, Vect2D | undefined>, start: Vect2D, target: Vect2D): Vect2D[] {
+    public static reconstructPath(cameFrom: Map<string, Vect2D | undefined>, start: Vect2D, target: Vect2D, reverse?: boolean): Vect2D[] {
         let current = target;
         const path: Vect2D[] = [];
         const startKey = start.key();
@@ -72,6 +72,10 @@ export class PathFinding {
             }
         }
         path.push(start);
-        return path.reverse();
+
+        if (reverse) {
+            return path.reverse();
+        }
+        return path;
     }
 }

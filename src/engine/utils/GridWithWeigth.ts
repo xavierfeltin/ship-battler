@@ -3,11 +3,13 @@ import { Vect2D } from "./Vect2D";
 export class GridWithWeights {
     private width: number;
     private height: number;
+    private granularity: number;
     private weigths: Map<string, number>;
 
-    public constructor(width: number, height: number, weights?: Map<string, number>) {
+    public constructor(width: number, height: number, granularity: number, weights?: Map<string, number>) {
         this.width = width;
         this.height = height;
+        this.granularity = granularity;
 
         this.weigths = new Map();
         if (weights) {
@@ -17,33 +19,53 @@ export class GridWithWeights {
         }
     }
 
-    public cost(to: Vect2D): number {
+    public cost(from: Vect2D, to: Vect2D): number {
         const weight = this.weigths.get(to.key());
-        return weight === undefined ? 1 : weight;
+        let cost = (weight === undefined) ? 1 : weight;
+
+        // Penalize a bit once the horizontal / vertical path, and the diagonal path in order to straighten the path
+        let nudge = 0;
+        if ((from.x + from.y) % 2 === 0 && from.x !== to.x)
+        {
+            nudge = 1;
+        }
+
+        if ((from.x + from.y) % 2 === 1 && from.y !== to.y)
+        {
+            nudge = 1;
+        }
+
+        if (from.x !== to.x && from.y !== to.y)
+        {
+            nudge = 1;
+        }
+
+        cost = cost + 0.001 * nudge;
+        return cost;
     }
 
     public isInBounds(location: Vect2D): boolean {
         return location.x >= 0 && location.x < this.width && location.y >= 0 && location.y < this.height;
     }
 
-    public isPassable(location: Vect2D): boolean {
-        const cost = this.cost(location);
-        return cost === 1;
+    public isPassable(from: Vect2D, to: Vect2D): boolean {
+        const cost = this.cost(from, to);
+        return cost >= 0;
     }
 
-    public neighbors(location: Vect2D): Vect2D[] {
+    public neighbors(from: Vect2D): Vect2D[] {
         const neighbors: Vect2D[] = [
-            new Vect2D(location.x + 1, location.y),
-            new Vect2D(location.x - 1, location.y),
-            new Vect2D(location.x, location.y - 1),
-            new Vect2D(location.x, location.y + 1),
-            new Vect2D(location.x + 1, location.y - 1),
-            new Vect2D(location.x - 1, location.y + 1),
-            new Vect2D(location.x - 1, location.y - 1),
-            new Vect2D(location.x + 1, location.y + 1)
+            new Vect2D(from.x + this.granularity, from.y),
+            new Vect2D(from.x - this.granularity, from.y),
+            new Vect2D(from.x, from.y - this.granularity),
+            new Vect2D(from.x, from.y + this.granularity),
+            new Vect2D(from.x + this.granularity, from.y - this.granularity),
+            new Vect2D(from.x - this.granularity, from.y + this.granularity),
+            new Vect2D(from.x - this.granularity, from.y - this.granularity),
+            new Vect2D(from.x + this.granularity, from.y + this.granularity)
         ];
 
-        return neighbors.filter((location) => this.isInBounds(location) && this.isPassable(location));
+        return neighbors.filter((to) => this.isInBounds(to) && this.isPassable(from, to));
     }
 
     public size(): number {
