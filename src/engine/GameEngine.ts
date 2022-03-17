@@ -16,6 +16,10 @@ import { CSpeed } from "./ecs/components/CSpeed";
 import { SOrientate } from "./ecs/systems/SOrientate";
 import { CPlanner } from "./ecs/components/CPlanner";
 import { SPlanify } from "./ecs/systems/SPlanify";
+import { SBuildMap } from "./ecs/systems/SBuildMap";
+import { CRigidBody } from "./ecs/components/CRigidBody";
+import { CActionTurn } from "./ecs/components/CActionTurn";
+import { CMap } from "./ecs/components/CMap";
 
 export class GameEngine {
     private ecs: ECSManager;
@@ -43,6 +47,13 @@ export class GameEngine {
         this.cacheSystemsByPriority.forEach(system => {
             system.onUpdate(this.ecs);
         });
+
+        // Clean actions that need to be removed from one update to another
+        this.ecs.selectEntitiesFromComponents([]).forEach((entity) => {
+            entity.components.delete(CActionTurn.name);
+            entity.components.delete(CMap.name);
+            entity.components.delete(COrientation.name);
+        });
     }
 
     private addArea() {
@@ -65,6 +76,7 @@ export class GameEngine {
     private addShip() {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
+        components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CPlanner.id, new CPlanner());
         components.set(CSpeed.id, new CSpeed(5));
         components.set(CPosition.id, new CPosition(new Vect2D(200, 200)));
@@ -80,16 +92,17 @@ export class GameEngine {
     }
 
     private addBot() {
-        this.ecs.addSystem("Planify", new SPlanify(0));
+        this.ecs.addSystem("BuildMap", new SBuildMap(0));
+        this.ecs.addSystem("Planify", new SPlanify(1));
     }
 
     private addPhysics() {
-        this.ecs.addSystem("Orientate", new SOrientate(1));
-        this.ecs.addSystem("Move", new SMove(2));
+        this.ecs.addSystem("Orientate", new SOrientate(2));
+        this.ecs.addSystem("Move", new SMove(3));
     }
 
     private addRendering() {
-        this.ecs.addSystem("RenderArea", new SRenderArea(3));
-        this.ecs.addSystem("RenderShip", new SRenderShip(4));
+        this.ecs.addSystem("RenderArea", new SRenderArea(4));
+        this.ecs.addSystem("RenderShip", new SRenderShip(5));
     }
 }

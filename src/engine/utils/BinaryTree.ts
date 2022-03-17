@@ -115,21 +115,30 @@ export class BinaryTree<T> {
         }
 
         const rootIndex = this.findRoot(node);
-        if (node.value > this.values.get(rootIndex).value) {
+        const root = this.values.get(rootIndex);
+
+        if (root && node.value > root.value) {
             this.setRight(node, rootIndex);
 
             const indexNewNode = this.nextRightSideIndex(rootIndex);
-            if (!this.values.has(this.maxIndex) || this.values.get(indexNewNode)?.value > this.values.get(this.maxIndex)?.value) {
+            const newNode = this.values.get(indexNewNode);
+            const maxNode = this.values.get(this.maxIndex);
+            if (!this.values.has(this.maxIndex) || (newNode && maxNode && newNode.value > maxNode.value)) {
                 this.maxIndex = indexNewNode;
             }
         }
-        else {
+        else if (root) {
             this.setLeft(node, rootIndex);
 
             const indexNewNode = this.nextLeftSideIndex(rootIndex);
-            if (!this.values.has(this.minIndex) || this.values.get(indexNewNode)?.value < this.values.get(this.minIndex)?.value) {
+            const newNode = this.values.get(indexNewNode);
+            const minNode = this.values.get(this.minIndex);
+            if (!this.values.has(this.minIndex) || (newNode && minNode && newNode.value < minNode.value)) {
                 this.minIndex = indexNewNode;
             }
+        }
+        else {
+            console.error("[addnode] root not found for node " + JSON.stringify(node));
         }
     }
 
@@ -137,7 +146,14 @@ export class BinaryTree<T> {
         let index: number = 0;
         let rootFound = false;
         while (!rootFound) {
-            let nextIndex = node.value >= this.values.get(index).value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
+            const nodeFromIndex = this.values.get(index);
+            if (nodeFromIndex === undefined)
+            {
+                console.error("[findRoot] node from index " + nodeFromIndex + " is undefined");
+                break;
+            }
+
+            let nextIndex = node.value >= nodeFromIndex.value ? this.nextRightSideIndex(index) : this.nextLeftSideIndex(index);
             if (this.values.has(nextIndex)) {
                 index = nextIndex;
             }
@@ -145,7 +161,7 @@ export class BinaryTree<T> {
                 rootFound = true;
             }
         }
-        return index;
+        return rootFound ? index : 0;
     }
 
     public findNewMin(): number {
@@ -200,18 +216,24 @@ export class BinaryTree<T> {
         // Get nodes in their appearance order
         while(queue.length > 0) {
             const currentIndex = queue.pop();
+            if (currentIndex === undefined) {
+                break;
+            }
+
             const leftIndex = this.nextLeftSideIndex(currentIndex);
             const rightIndex = this.nextRightSideIndex(currentIndex);
 
-            if(this.values.has(leftIndex)) {
+            const leftNode = this.values.get(leftIndex);
+            if(leftNode !== undefined) {
                 queue.push(leftIndex);
-                nodes.push(this.values.get(leftIndex));
+                nodes.push(leftNode);
                 dfsIndexes.push(leftIndex);
             }
 
-            if (this.values.has(rightIndex)) {
+            const rightNode = this.values.get(rightIndex);
+            if (rightNode !== undefined) {
                 queue.push(rightIndex);
-                nodes.push(this.values.get(rightIndex));
+                nodes.push(rightNode);
                 dfsIndexes.push(rightIndex);
             }
         }

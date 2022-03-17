@@ -71,4 +71,29 @@ export class GridWithWeights {
     public size(): number {
         return this.width * this.height;
     }
+
+    public getClosestNodeFromPosition(pos: Vect2D): Vect2D {
+        const remainderX = pos.x % this.granularity;
+        const remainderY = pos.y % this.granularity;
+
+        if (remainderX === 0 && remainderY === 0) {
+            return pos;
+        }
+
+        const candidates: Vect2D[] = [
+            new Vect2D(pos.x - remainderX, pos.y - remainderY),
+            new Vect2D(pos.x - remainderX + this.granularity, pos.y - remainderY),
+            new Vect2D(pos.x - remainderX, pos.y - remainderY + this.granularity),
+            new Vect2D(pos.x - remainderX + this.granularity, pos.y - remainderY + this.granularity)
+        ];
+
+        let closest = candidates[0];
+        let closestDistance = pos.distance2(candidates[0]);
+        for(let i = 1; i < candidates.length; i++) {
+            if (pos.distance2(candidates[i]) < closestDistance) {
+                closest = candidates[i];
+            }
+        }
+        return closest;
+    }
 }

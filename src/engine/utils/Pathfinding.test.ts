@@ -14,7 +14,7 @@ test('Find path of two points on a vertical line', () => {
     const grid = new GridWithWeights(10, 10, 1);
 
     const result = PathFinding.aStarSearch(grid, from, to);
-    const path = PathFinding.reconstructPath(result.cameFrom, from, to);
+    const path = PathFinding.reconstructPath(grid, result.cameFrom, from, to, true);
 
     expect(path.length).toBe(6);
     expect(path[0].key()).toBe("1-1");
@@ -31,7 +31,7 @@ test('Find path of two points on a diagonal', () => {
     const grid = new GridWithWeights(10, 10, 1);
 
     const result = PathFinding.aStarSearch(grid, from, to);
-    const path = PathFinding.reconstructPath(result.cameFrom, from, to, true);
+    const path = PathFinding.reconstructPath(grid, result.cameFrom, from, to, true);
 
     expect(path.length).toBe(6);
     expect(path[0].key()).toBe("1-1");
@@ -52,7 +52,7 @@ test('Find path of two points on a vertical line with an obstacle', () => {
     const grid = new GridWithWeights(10, 10, 1, weights);
 
     const result = PathFinding.aStarSearch(grid, from, to);
-    const path = PathFinding.reconstructPath(result.cameFrom, from, to, true);
+    const path = PathFinding.reconstructPath(grid, result.cameFrom, from, to, true);
 
     expect(path.length).toBe(6);
     expect(path[0].key()).toBe("1-1");

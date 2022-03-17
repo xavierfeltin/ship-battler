@@ -30,6 +30,9 @@ export class SBuildMap implements ISystem {
 
   private buildMap(entity: IEntity, width: number, height: number, granularity: number): CMap {
     let weights = new Map<string, number>();
+
+    // TODO: compute map depending of the other entities on the map detected by the current entity
+
     let map = new CMap({
       width: width,
       height: height,

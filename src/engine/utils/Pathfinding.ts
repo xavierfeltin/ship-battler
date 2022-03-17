@@ -10,8 +10,11 @@ export class PathFinding {
 
     // A* from https://www.redblobgames.com/pathfinding/a-star/implementation.html
     public static aStarSearch(graph: GridWithWeights, start: Vect2D, target: Vect2D): {cameFrom: Map<string, Vect2D | undefined>, costSoFar: Map<string, number>} {
+        const startWaypoint = graph.getClosestNodeFromPosition(start);
+        const targetWaypoint = graph.getClosestNodeFromPosition(target);
+
         let toVisit = new PriorityQueue<Vect2D>();
-        toVisit.push(0, start);
+        toVisit.push(0, startWaypoint);
 
         let cameFrom = new Map<string, Vect2D | undefined>();
         let costSoFar = new Map<string, number>();
@@ -26,7 +29,7 @@ export class PathFinding {
             }
 
             // Found our target \o/ !
-            if (current !== undefined && current.eq(target)) {
+            if (current !== undefined && current.eq(targetWaypoint)) {
                 break;
             }
 
@@ -43,7 +46,7 @@ export class PathFinding {
                     costSoFar.set(next.key(), newCost);
 
                     // Visit first the path we supposed the less costly
-                    const priority = newCost + this.manhattanDistance(next, target);
+                    const priority = newCost + this.manhattanDistance(next, targetWaypoint);
                     toVisit.push(priority, next);
                     cameFrom.set(next.key(), current);
                 }
@@ -56,10 +59,13 @@ export class PathFinding {
         };
     }
 
-    public static reconstructPath(cameFrom: Map<string, Vect2D | undefined>, start: Vect2D, target: Vect2D, reverse?: boolean): Vect2D[] {
-        let current = target;
+    public static reconstructPath(graph: GridWithWeights, cameFrom: Map<string, Vect2D | undefined>, start: Vect2D, target: Vect2D, reverse?: boolean): Vect2D[] {
+        const startWaypoint = graph.getClosestNodeFromPosition(start);
+        const targetWaypoint = graph.getClosestNodeFromPosition(target);
+
+        let current = targetWaypoint;
         const path: Vect2D[] = [];
-        const startKey = start.key();
+        const startKey = startWaypoint.key();
 
         while (current.key() !== startKey) {
             path.push(current);
@@ -71,7 +77,7 @@ export class PathFinding {
                 console.warn("A step in the path being reconstructed is undefined. The path may not be fully correct.");
             }
         }
-        path.push(start);
+        path.push(startWaypoint);
 
         if (reverse) {
             return path.reverse();

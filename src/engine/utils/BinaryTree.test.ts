@@ -50,8 +50,8 @@ test('Set left node', () => {
     bt.setLeft({value: 50, object: 50}, 0);
     const btMap = bt.getBT();
     expect(bt.getBT().size).toBe(2);
-    expect(btMap.get(0).value).toBe(100);
-    expect(btMap.get(1).value).toBe(50);
+    expect(btMap.get(0)?.value).toBe(100);
+    expect(btMap.get(1)?.value).toBe(50);
 });
 
 test('Set right node', () => {
@@ -60,9 +60,9 @@ test('Set right node', () => {
     bt.setRight({value: 150, object: 150}, 0);
     const btMap = bt.getBT();
     expect(bt.getBT().size).toBe(2);
-    expect(btMap.get(0).value).toBe(100);
-    expect(btMap.get(1)).toBe(undefined);
-    expect(btMap.get(2).value).toBe(150);
+    expect(btMap.get(0)?.value).toBe(100);
+    expect(btMap.get(1))?.toBe(undefined);
+    expect(btMap.get(2)?.value).toBe(150);
 });
 
 test('Find root index with only a root', () => {
@@ -107,9 +107,9 @@ test('Creating a simple binary tree with one level', () => {
 
     const btMap = bt.getBT();
     expect(btMap.size).toBe(3);
-    expect(btMap.get(0).value).toBe(100);
-    expect(btMap.get(1).value).toBe(50);
-    expect(btMap.get(2).value).toBe(150);
+    expect(btMap.get(0)?.value).toBe(100);
+    expect(btMap.get(1)?.value).toBe(50);
+    expect(btMap.get(2)?.value).toBe(150);
 });
 
 test('Creating a simple unbalanced binary tree with three levels', () => {
@@ -124,14 +124,14 @@ test('Creating a simple unbalanced binary tree with three levels', () => {
 
     const btMap = bt.getBT();
     expect(btMap.size).toBe(8);
-    expect(btMap.get(0).value).toBe(100);
-    expect(btMap.get(1).value).toBe(50);
-    expect(btMap.get(2).value).toBe(150);
-    expect(btMap.get(3).value).toBe(20);
-    expect(btMap.get(5).value).toBe(125);
-    expect(btMap.get(6).value).toBe(200);
-    expect(btMap.get(11).value).toBe(110);
-    expect(btMap.get(23).value).toBe(105);
+    expect(btMap.get(0)?.value).toBe(100);
+    expect(btMap.get(1)?.value).toBe(50);
+    expect(btMap.get(2)?.value).toBe(150);
+    expect(btMap.get(3)?.value).toBe(20);
+    expect(btMap.get(5)?.value).toBe(125);
+    expect(btMap.get(6)?.value).toBe(200);
+    expect(btMap.get(11)?.value).toBe(110);
+    expect(btMap.get(23)?.value).toBe(105);
 });
 
 test('Pop min values from tree [100,50,20,150,125,110,105,200]', () => {
@@ -144,21 +144,21 @@ test('Pop min values from tree [100,50,20,150,125,110,105,200]', () => {
     bt.addNode({value: 105, object: 105});
     bt.addNode({value: 20, object: 20});
 
-    expect(bt.popMin().value).toBe(20);
+    expect(bt.popMin()?.value).toBe(20);
     expect(bt.getBT().size).toBe(7);
-    expect(bt.popMin().value).toBe(50);
+    expect(bt.popMin()?.value).toBe(50);
     expect(bt.getBT().size).toBe(6);
-    expect(bt.popMin().value).toBe(100);
+    expect(bt.popMin()?.value).toBe(100);
     expect(bt.getBT().size).toBe(5);
-    expect(bt.popMin().value).toBe(105);
+    expect(bt.popMin()?.value).toBe(105);
     expect(bt.getBT().size).toBe(4);
-    expect(bt.popMin().value).toBe(110);
+    expect(bt.popMin()?.value).toBe(110);
     expect(bt.getBT().size).toBe(3);
-    expect(bt.popMin().value).toBe(125);
+    expect(bt.popMin()?.value).toBe(125);
     expect(bt.getBT().size).toBe(2);
-    expect(bt.popMin().value).toBe(150);
+    expect(bt.popMin()?.value).toBe(150);
     expect(bt.getBT().size).toBe(1);
-    expect(bt.popMin().value).toBe(200);
+    expect(bt.popMin()?.value).toBe(200);
     expect(bt.getBT().size).toBe(0);
 });
 
@@ -172,12 +172,12 @@ test('Pop max values from tree [100,50,20,150,125,110,105,200]', () => {
     bt.addNode({value: 105, object: 105});
     bt.addNode({value: 20, object: 20});
 
-    expect(bt.popMax().value).toBe(200);
-    expect(bt.popMax().value).toBe(150);
-    expect(bt.popMax().value).toBe(125);
-    expect(bt.popMax().value).toBe(110);
-    expect(bt.popMax().value).toBe(105);
-    expect(bt.popMax().value).toBe(100);
-    expect(bt.popMax().value).toBe(50);
-    expect(bt.popMax().value).toBe(20);
+    expect(bt.popMax()?.value).toBe(200);
+    expect(bt.popMax()?.value).toBe(150);
+    expect(bt.popMax()?.value).toBe(125);
+    expect(bt.popMax()?.value).toBe(110);
+    expect(bt.popMax()?.value).toBe(105);
+    expect(bt.popMax()?.value).toBe(100);
+    expect(bt.popMax()?.value).toBe(50);
+    expect(bt.popMax()?.value).toBe(20);
 });
