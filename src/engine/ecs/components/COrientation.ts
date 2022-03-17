@@ -1,3 +1,4 @@
+import { MyMath } from '../../utils/MyMath';
 import { Vect2D } from '../../utils/Vect2D';
 import { IComponent } from '../IComponent';
 
@@ -5,7 +6,7 @@ export class COrientation implements IComponent {
   public static id: string = "Orientation";
   public id: string = COrientation.id;
 
-  private _angle: number;
+  private _angle: number; // in degrees
     public get angle(): number {
         return this._angle;
     }
@@ -28,9 +29,6 @@ export class COrientation implements IComponent {
   }
 
   private computeHeading(): Vect2D {
-    const rad = this.angle * Math.PI / 180;
-    const vx = Math.cos(rad);
-    const vy = Math.sin(rad);
-    return new Vect2D(vx, vy);
+    return MyMath.getDirectionFromAngle(this._angle);
   }
 }

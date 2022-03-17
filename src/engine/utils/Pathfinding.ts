@@ -1,4 +1,3 @@
-import path from "path";
 import { GridWithWeights } from "./GridWithWeigth";
 import { PriorityQueue } from "./PriorityQueue";
 import { Vect2D } from "./Vect2D";

@@ -1,6 +1,5 @@
 import { ISystem } from '../ISystem';
 import { ECSManager } from '../ECSManager';
-import { IComponent } from '../IComponent';
 import { CMap } from '../components/CMap';
 import { CShip } from '../components/CShip';
 import { CRenderer } from '../components/CRenderer';

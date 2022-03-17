@@ -9,6 +9,7 @@ import { CRigidBody } from "../../ecs/components/CRigidBody";
 import { COrientation } from "../../ecs/components/COrientation";
 import { IAActionState, IAIAction } from "../IAIAction";
 import { CMap } from "../../ecs/components/CMap";
+import { MyMath } from "../../utils/MyMath";
 
 export class AGoTo implements IAIAction{
     public static id: string = "GoTo";
@@ -83,8 +84,12 @@ export class AGoTo implements IAIAction{
             return undefined;
         }
 
-        const trajectory = Vect2D.sub(from, to);
-        const rotationAngle = trajectory.angleWithVector(heading);
-        return new CActionTurn(rotationAngle);
+        const trajectory = Vect2D.sub(to, from);
+        const rotationAngleInRadian = heading.angleWithVector(trajectory);
+        const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
+
+        console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
+
+        return new CActionTurn(rotationAngleInDegree);
     }
 }

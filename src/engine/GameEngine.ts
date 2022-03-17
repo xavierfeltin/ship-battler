@@ -78,9 +78,9 @@ export class GameEngine {
         components.set(CShip.id, new CShip());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CPlanner.id, new CPlanner());
-        components.set(CSpeed.id, new CSpeed(5));
+        components.set(CSpeed.id, new CSpeed(1));
         components.set(CPosition.id, new CPosition(new Vect2D(200, 200)));
-        components.set(COrientation.id, new COrientation(35));
+        components.set(COrientation.id, new COrientation(0));
         components.set(CVelocity.id, new CVelocity(new Vect2D(0, 0)));
         components.set(CRenderer.id, new CRenderer({
             width: 40,

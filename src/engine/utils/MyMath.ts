@@ -37,4 +37,12 @@ export class MyMath {
         const angleDeg = toTargetVector.angleWithVector(direction) * 180 / Math.PI; // wwith normalized vector
         return Math.round(-angleDeg);
     }
+
+    public static radianToDegree(angle: number): number {
+        return angle * Math.PI * 180.0;
+    }
+
+    public static degreeToRadian(angle: number): number {
+        return angle * Math.PI / 180.0;
+    }
 }
