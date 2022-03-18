@@ -39,10 +39,10 @@ export class MyMath {
     }
 
     public static radianToDegree(angle: number): number {
-        return angle * Math.PI * 180.0;
+        return (angle * 180) / Math.PI;
     }
 
     public static degreeToRadian(angle: number): number {
-        return angle * Math.PI / 180.0;
+        return (angle * Math.PI) / 180.0;
     }
 }
