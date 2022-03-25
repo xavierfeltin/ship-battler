@@ -20,6 +20,8 @@ import { SBuildMap } from "./ecs/systems/SBuildMap";
 import { CRigidBody } from "./ecs/components/CRigidBody";
 import { CActionTurn } from "./ecs/components/CActionTurn";
 import { CMap } from "./ecs/components/CMap";
+import { CDomain } from "./ecs/components/CDomain";
+import { ShipDomain } from "./bot/ShipDomain";
 
 export class GameEngine {
     private ecs: ECSManager;
@@ -76,8 +78,9 @@ export class GameEngine {
     private addShip() {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1})));
+        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1}>());
         components.set(CRigidBody.id, new CRigidBody(20));
-        components.set(CPlanner.id, new CPlanner());
         components.set(CSpeed.id, new CSpeed(5));
         components.set(CPosition.id, new CPosition(new Vect2D(200, 200)));
         components.set(COrientation.id, new COrientation(0));
