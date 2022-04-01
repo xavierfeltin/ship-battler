@@ -10,8 +10,7 @@ export class TFireAt<T extends {isInRange: number;}> extends Task<T> {
     }
 
     public canBeRun(worldState: WorldState): boolean {
-        let couldRun = true;
-        return couldRun;
+        return worldState.getState(this.indexes.isInRange) === 1;
     }
 
     public applyEffects(worldState: WorldState): WorldState {

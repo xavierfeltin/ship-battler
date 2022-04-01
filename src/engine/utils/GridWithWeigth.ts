@@ -19,6 +19,10 @@ export class GridWithWeights {
         }
     }
 
+    public setConstraints(weights: Map<string, number>) {
+        this.weigths = weights;
+    }
+
     public cost(from: Vect2D, to: Vect2D): number {
         const weight = this.weigths.get(to.key());
         let cost = (weight === undefined) ? 1 : weight;

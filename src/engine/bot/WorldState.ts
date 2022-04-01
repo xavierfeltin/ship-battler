@@ -15,7 +15,7 @@ export class WorldState {
         this.states.set(index, value);
     }
 
-    public getState(index: number, value: number): any | undefined {
+    public getState(index: number): any | undefined {
         return this.states.get(index);
     }
 }

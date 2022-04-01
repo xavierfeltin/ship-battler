@@ -22,6 +22,14 @@ import { CActionTurn } from "./ecs/components/CActionTurn";
 import { CMap } from "./ecs/components/CMap";
 import { CDomain } from "./ecs/components/CDomain";
 import { ShipDomain } from "./bot/ShipDomain";
+import { CShipSensor } from "./ecs/components/CShipSensor";
+import { SDetectShip } from "./ecs/systems/SDetectShip";
+
+export interface ShipConfiguration {
+    position: Vect2D;
+    speed: number;
+    hasShipSensor: boolean;
+}
 
 export class GameEngine {
     private ecs: ECSManager;
@@ -37,7 +45,16 @@ export class GameEngine {
     public init() {
         this.addArea();
         this.addTimeFrame();
-        this.addShip();
+        this.addShip({
+            position: new Vect2D(200, 200),
+            hasShipSensor: true,
+            speed: 5
+        });
+        this.addShip({
+            position: new Vect2D(500, 500),
+            hasShipSensor: false,
+            speed: 7
+        });
 
         this.addBot();
         this.addPhysics();
@@ -75,16 +92,20 @@ export class GameEngine {
         this.ecs.addUniqEntity('TimeFrame', components);
     }
 
-    private addShip() {
+    private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
         components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1}>());
         components.set(CRigidBody.id, new CRigidBody(20));
-        components.set(CSpeed.id, new CSpeed(5));
-        components.set(CPosition.id, new CPosition(new Vect2D(200, 200)));
+        components.set(CSpeed.id, new CSpeed(config.speed));
+        components.set(CPosition.id, new CPosition(config.position));
         components.set(COrientation.id, new COrientation(0));
         components.set(CVelocity.id, new CVelocity(new Vect2D(0, 0)));
+        if (config.hasShipSensor)
+        {
+            components.set(CShipSensor.id, new CShipSensor());
+        }
         components.set(CRenderer.id, new CRenderer({
             width: 40,
             height: 40,
@@ -96,16 +117,17 @@ export class GameEngine {
 
     private addBot() {
         this.ecs.addSystem("BuildMap", new SBuildMap(0));
-        this.ecs.addSystem("Planify", new SPlanify(1));
+        this.ecs.addSystem("DetectShip", new SDetectShip(1));
+        this.ecs.addSystem("Planify", new SPlanify(2));
     }
 
     private addPhysics() {
-        this.ecs.addSystem("Orientate", new SOrientate(2));
-        this.ecs.addSystem("Move", new SMove(3));
+        this.ecs.addSystem("Orientate", new SOrientate(3));
+        this.ecs.addSystem("Move", new SMove(4));
     }
 
     private addRendering() {
-        this.ecs.addSystem("RenderArea", new SRenderArea(4));
-        this.ecs.addSystem("RenderShip", new SRenderShip(5));
+        this.ecs.addSystem("RenderArea", new SRenderArea(5));
+        this.ecs.addSystem("RenderShip", new SRenderShip(6));
     }
 }

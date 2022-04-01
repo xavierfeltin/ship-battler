@@ -12,8 +12,9 @@ import { CMap } from "../../ecs/components/CMap";
 import { MyMath } from "../../utils/MyMath";
 import { Task } from "./Task";
 import { WorldState } from "../WorldState";
+import { CShipSensor } from "../../ecs/components/CShipSensor";
 
-export class TNavigateTo<T extends {isMoving: number;}> extends Task<T> {
+export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extends Task<T> {
     public static id: string = "GoTo";
     public id: string = TNavigateTo.id;
 
@@ -30,23 +31,6 @@ export class TNavigateTo<T extends {isMoving: number;}> extends Task<T> {
         this.to = new Vect2D(0, 0);
         this.map = new GridWithWeights(0, 0, 0);
         this.path = [];
-
-        /*
-        const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
-        this.from = fromPosition.value;
-
-        const targetPosition: CTargetPosition = agent.components.get(CTargetPosition.id) as CTargetPosition;
-        this.to = targetPosition.value;
-        this._state = IAActionState.NONE;
-
-        const agentMap = agent.components.get(CMap.id) as CMap;
-        this.map = agentMap.grid;
-
-        const result = PathFinding.aStarSearch(this.map, this.from, this.to);
-        this.path = PathFinding.reconstructPath(this.map, result.cameFrom, this.from, this.to);
-
-        this.nextPoint = this.path.pop(); //remove current position
-        */
     }
 
     public canBeRun(worldState: WorldState): boolean {
@@ -56,6 +40,7 @@ export class TNavigateTo<T extends {isMoving: number;}> extends Task<T> {
 
     public applyEffects(worldState: WorldState): WorldState {
         worldState.changeState(this.indexes.isMoving, 1); // When the flag is reset to 0 ???
+        worldState.changeState(this.indexes.isInRange, 1); // At the end we suppose to be in range of the target
         return worldState;
     }
 
@@ -96,15 +81,17 @@ export class TNavigateTo<T extends {isMoving: number;}> extends Task<T> {
         const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
         this.from = fromPosition.value;
 
-        /*
-        const targetPosition: CTargetPosition = agent.components.get(CTargetPosition.id) as CTargetPosition;
-        this.to = targetPosition.value;
-        */
-
-        // Define new target (see how to do something smarter)
-        let destX = Math.floor(Math.random() * 1200);
-        let destY = Math.floor(Math.random() * 800);
-        this.to = new Vect2D(destX, destY);
+        const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
+        if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
+            this.to = shipSensor.detectedPos;
+            console.log("Follow ship target " + shipSensor.detectedShipId);
+        }
+        else {
+            // Define a random new target (see how to do something smarter)
+            let destX = Math.floor(Math.random() * 1200);
+            let destY = Math.floor(Math.random() * 800);
+            this.to = new Vect2D(destX, destY);
+        }
 
         const agentMap = agent.components.get(CMap.id) as CMap;
         this.map = agentMap.grid;

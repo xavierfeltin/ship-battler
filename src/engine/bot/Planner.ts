@@ -17,7 +17,6 @@ export class Planner<T> {
     }
 
     public planify(domain: Domain<T>, agent: IEntity): IComponent | undefined {
-        domain.updateWorldState(agent);
 
         // If action being solved is over or no longer valid, get next action on planning
         // if planning no longer valid, regenerate a planning
@@ -27,6 +26,7 @@ export class Planner<T> {
             if(this.planning.length === 0) {
                 this.buildPlanning(domain, agent);
             }
+
             this.actionBeingSolved = this.planning.pop();
         }
         // else the current action is still being solved
@@ -45,15 +45,6 @@ export class Planner<T> {
 
     private buildPlanning(domain: Domain<T>, agent: IEntity): void {
         console.log("[BuildPlanning] generate a new planning for agent " + agent.name);
-        /*
-        let destX = Math.floor(Math.random() * 1200);
-        let destY = Math.floor(Math.random() * 800);
-        let to = new Vect2D(destX, destY);
-
-        let goToAction = new AGoTo(agent, to);
-        let previsional: IAIAction[] = [goToAction];
-        this.planning = previsional.reverse();
-        */
 
         let availableTasks: (Task<T> | CompoundTask<T>)[] = domain.getAvailableTasks();
         let worlState = domain.getWorldState();
