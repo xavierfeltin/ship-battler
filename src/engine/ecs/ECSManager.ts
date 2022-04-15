@@ -2,15 +2,24 @@ import { IComponent } from "./IComponent";
 import { IEntity } from "./IEntity";
 import { ISystem } from "./ISystem";
 
+export enum ESystems {
+    BOT,
+    PHYSICS,
+    RENDERERS
+}
 export class ECSManager {
     private entities: Map<string, IEntity>;
-    private systems: Map<string, ISystem>;
+    private botSystems: Map<string, ISystem>;
+    private physicsSystems: Map<string, ISystem>;
+    private renderersSystems: Map<string, ISystem>;
 
     private lastId: number;
 
     public constructor() {
         this.entities = new Map();
-        this.systems = new Map();
+        this.botSystems = new Map();
+        this.physicsSystems = new Map();
+        this.renderersSystems = new Map();
         this.lastId = 0;
     }
 
@@ -45,19 +54,56 @@ export class ECSManager {
         entity.components.delete(component.id);
     }
 
-    public addSystem(name: string, system: ISystem) {
-        this.systems.set(name, system);
+    public addSystem(name: string, system: ISystem, type: ESystems) {
+        switch(type)
+        {
+            case ESystems.BOT:
+                this.botSystems.set(name, system);
+                break;
+            case ESystems.PHYSICS:
+                this.physicsSystems.set(name, system);
+                break;
+            case ESystems.RENDERERS:
+                this.renderersSystems.set(name, system);
+                break;
+            default:
+                break;
+        }
     }
 
-    public removeSystem(name: string) {
-        this.systems.delete(name);
+    public removeSystem(name: string, type: ESystems) {
+        switch(type)
+        {
+            case ESystems.BOT:
+                this.botSystems.delete(name);
+                break;
+            case ESystems.PHYSICS:
+                this.physicsSystems.delete(name);
+                break;
+            case ESystems.RENDERERS:
+                this.renderersSystems.delete(name);
+                break;
+            default:
+                break;
+        }
     }
 
-    public getSystemListByPriority(): ISystem[] {
+    public getSystemListByPriority(type: ESystems): ISystem[] {
         const sortByPriority = function(a: [string, ISystem], b: [string, ISystem]): number {
             return (a[1].priority - b[1].priority);
         }
-        return Array.from(this.systems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+
+        switch(type)
+        {
+            case ESystems.BOT:
+                return Array.from(this.botSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+            case ESystems.PHYSICS:
+                return Array.from(this.physicsSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+            case ESystems.RENDERERS:
+                return Array.from(this.renderersSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+            default:
+                return [];
+        }
     }
 
     public selectEntitiesFromComponents(including: string[], excluding?: string[]): IEntity[] {

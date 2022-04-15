@@ -1,9 +1,7 @@
 import { Domain } from "./Domain";
 import { IComponent } from "../ecs/IComponent";
 import { IEntity } from "../ecs/IEntity";
-//import { Vect2D } from "../utils/Vect2D";
-//import { AGoTo } from "./Action/AGoTo";
-import { IAActionState /*, IAIAction*/ } from "./IAIAction";
+import { IAActionState } from "./IAIAction";
 import { CompoundTask } from "./Task/CompoundTask";
 import { Task } from "./Task/Task";
 

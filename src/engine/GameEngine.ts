@@ -3,7 +3,7 @@ import { CPosition } from "./ecs/components/CPosition";
 import { CRenderer } from "./ecs/components/CRenderer";
 import { CShip } from "./ecs/components/CShip";
 import { CVelocity } from "./ecs/components/CVelocity";
-import { ECSManager } from "./ecs/ECSManager";
+import { ECSManager, ESystems } from "./ecs/ECSManager";
 import { Vect2D } from "./utils/Vect2D";
 import { ShipResources} from "./resources/RShip";
 import { SMove } from "./ecs/systems/SMove";
@@ -24,6 +24,9 @@ import { CDomain } from "./ecs/components/CDomain";
 import { ShipDomain } from "./bot/ShipDomain";
 import { CShipSensor } from "./ecs/components/CShipSensor";
 import { SDetectShip } from "./ecs/systems/SDetectShip";
+import { CCanvas } from "./ecs/components/CCanvas";
+import { SRenderMissile } from "./ecs/systems/SRenderMissile";
+import { SFire } from "./ecs/systems/SFire";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -34,15 +37,16 @@ export interface ShipConfiguration {
 export class GameEngine {
     private ecs: ECSManager;
     private ctx: CanvasRenderingContext2D;
-    private cacheSystemsByPriority: ISystem[];
+    private cacheSystemsByPriority: {bots: ISystem[], physics: ISystem[], renderers: ISystem[]};
 
     public constructor(canvas: CanvasRenderingContext2D) {
         this.ecs = new ECSManager();
         this.ctx = canvas;
-        this.cacheSystemsByPriority = [];
+        this.cacheSystemsByPriority = {bots: [], physics: [], renderers: []};
     }
 
     public init() {
+        this.addCanvas();
         this.addArea();
         this.addTimeFrame();
         this.addShip({
@@ -59,11 +63,21 @@ export class GameEngine {
         this.addBot();
         this.addPhysics();
         this.addRendering();
-        this.cacheSystemsByPriority = this.ecs.getSystemListByPriority();
+        this.cacheSystemsByPriority.bots = this.ecs.getSystemListByPriority(ESystems.BOT);
+        this.cacheSystemsByPriority.physics = this.ecs.getSystemListByPriority(ESystems.PHYSICS);
+        this.cacheSystemsByPriority.renderers = this.ecs.getSystemListByPriority(ESystems.RENDERERS);
     }
 
     public update() {
-        this.cacheSystemsByPriority.forEach(system => {
+        this.cacheSystemsByPriority.bots.forEach(system => {
+            system.onUpdate(this.ecs);
+        });
+
+        this.cacheSystemsByPriority.physics.forEach(system => {
+            system.onUpdate(this.ecs);
+        });
+
+        this.cacheSystemsByPriority.renderers.forEach(system => {
             system.onUpdate(this.ecs);
         });
 
@@ -92,10 +106,16 @@ export class GameEngine {
         this.ecs.addUniqEntity('TimeFrame', components);
     }
 
+    private addCanvas() {
+        let components = new Map<string, IComponent>();
+        components.set(CCanvas.id, new CCanvas(this.ctx));
+        this.ecs.addUniqEntity('Canvas', components);
+    }
+
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1})));
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: config.hasShipSensor ? 1 : 0})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
@@ -116,18 +136,20 @@ export class GameEngine {
     }
 
     private addBot() {
-        this.ecs.addSystem("BuildMap", new SBuildMap(0));
-        this.ecs.addSystem("DetectShip", new SDetectShip(1));
-        this.ecs.addSystem("Planify", new SPlanify(2));
+        this.ecs.addSystem("BuildMap", new SBuildMap(0), ESystems.BOT);
+        this.ecs.addSystem("DetectShip", new SDetectShip(1), ESystems.BOT);
+        this.ecs.addSystem("Planify", new SPlanify(2), ESystems.BOT);
+        this.ecs.addSystem("Fire", new SFire(3), ESystems.BOT);
     }
 
     private addPhysics() {
-        this.ecs.addSystem("Orientate", new SOrientate(3));
-        this.ecs.addSystem("Move", new SMove(4));
+        this.ecs.addSystem("Orientate", new SOrientate(0), ESystems.PHYSICS);
+        this.ecs.addSystem("Move", new SMove(1), ESystems.PHYSICS);
     }
 
     private addRendering() {
-        this.ecs.addSystem("RenderArea", new SRenderArea(5));
-        this.ecs.addSystem("RenderShip", new SRenderShip(6));
+        this.ecs.addSystem("RenderArea", new SRenderArea(0), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderShip", new SRenderShip(1), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderMissile", new SRenderMissile(2), ESystems.RENDERERS);
     }
 }

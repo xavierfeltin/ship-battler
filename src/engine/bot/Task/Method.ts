@@ -4,13 +4,15 @@ import { WorldState } from "../WorldState";
 
 export class Method<T> {
     protected tasks: (Task<T> | CompoundTask<T>)[];
+    protected predicate: (worldState: WorldState) => boolean;
 
-    public constructor() {
+    public constructor(predicate: (worldState: WorldState) => boolean) {
         this.tasks = [];
+        this.predicate = predicate;
     }
 
     public canBeRun(worldState: WorldState): boolean {
-        return true;
+        return this.predicate(worldState);
     }
 
     public decompose(): (Task<T> | CompoundTask<T>)[] {

@@ -1,13 +1,13 @@
 import { Domain } from "./Domain";
-import { CTAttackEnnemy } from "./Task/CTAttackEnnemy";
+import { CTBeShip } from "./Task/CTBeShip";
 
-export class ShipDomain<T extends {isMoving: number; isInRange: number;}> extends Domain<T> {
+export class ShipDomain<T extends {isMoving: number; isInRange: number; hasWeapon: number;}> extends Domain<T> {
     public constructor(indexes: T) {
         super(indexes);
         this.worldState.changeState(this.indexes.isMoving, 0);
         this.worldState.changeState(this.indexes.isInRange, 0);
 
-        this.pushTask(new CTAttackEnnemy<T>(indexes));
+        this.pushTask(new CTBeShip<T>(indexes));
     }
 
     public updateWorldState(index: number, value: number): void {
