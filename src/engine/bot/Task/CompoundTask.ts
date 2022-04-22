@@ -12,22 +12,18 @@ export class CompoundTask<T> {
         this.methods.push(method);
     }
 
-    public findSatisfiedMethod(worldState: WorldState): Method<T> | undefined {
+    public findSatisfiedMethods(worldState: WorldState): Method<T>[] {
         if (this.methods.length === 0) {
-            return undefined;
+            return [];
         }
 
-        let canBeRun: boolean = false;
-        let current: Method<T> | undefined = undefined;
-        let index = 0;
-        while (!canBeRun && index < this.methods.length) {
-            current = this.methods[index];
-            canBeRun = current.canBeRun(worldState);
-
-            if (!canBeRun) {
-                index++;
+        let methods: Method<T>[] = [];
+        this.methods.forEach((method) => {
+            if (method.canBeRun(worldState)) {
+                methods.push(method);
             }
-        }
-        return current;
+        })
+
+        return methods;
     }
 }

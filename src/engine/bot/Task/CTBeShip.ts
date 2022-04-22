@@ -9,11 +9,19 @@ export class CTBeShip<T extends {isMoving: number; isInRange: number; hasWeapon:
         super();
         this.methods = [];
 
-        let predicate = (worldState: WorldState): boolean => {
+        let predicateKill = (worldState: WorldState): boolean => {
+            const hasWeapon: boolean = worldState.getState(indexes.hasWeapon) === 1;
+            return hasWeapon;
+        }
+        let method = new Method<T>(predicateKill);
+        method.pushTask(new CTAttackEnnemy<T>(indexes));
+        method.pushTask(new TNavigateTo<T>(indexes));
+        this.methods.push(method);
+
+        let predicateFind = (worldState: WorldState): boolean => {
             return true;
         }
-        let method = new Method<T>(predicate);
-        method.pushTask(new CTAttackEnnemy<T>(indexes));
+        method = new Method<T>(predicateFind);
         method.pushTask(new TNavigateTo<T>(indexes));
         this.methods.push(method);
     }
