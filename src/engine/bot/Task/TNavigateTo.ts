@@ -59,15 +59,19 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         if (this.nextPoint === undefined || this.from.distance(this.nextPoint) < rigidBody.radius) {
             const waypoint  = this.getNextWaypoint();
 
+            /*
             const nextPointKey = this.nextPoint === undefined ? "undefined" : this.nextPoint.key();
             const waypointKey = waypoint === undefined ? "undefined" : waypoint.key();
             console.log("[AGoTo] waypoint reached " + nextPointKey + " by standing at " + this.from.key() + ", go to next waypoint " + waypointKey);
+            */
             this.nextPoint = waypoint;
         }
+        /*
         else {
             const nextPointKey = this.nextPoint === undefined ? "undefined" : this.nextPoint.key();
             console.log("[AGoTo] keep going to " + nextPointKey + " by standing at " + this.from.key());
         }
+        */
 
         const nextAction = this.goTo(this.from, this.nextPoint, orientation.heading);
         if (nextAction === undefined) {
@@ -117,8 +121,12 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const rotationAngleInRadian = heading.angleWithVector(trajectory);
         const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
 
-        console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
+       // console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
 
         return new CActionTurn(rotationAngleInDegree);
+    }
+
+    public info(): string {
+        return "NavTo"
     }
 }

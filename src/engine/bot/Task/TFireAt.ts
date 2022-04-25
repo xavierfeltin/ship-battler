@@ -31,10 +31,14 @@ export class TFireAt<T extends {isInRange: number; hasWeapon: number;}> extends 
 
             const heading = Vect2D.sub(target, pos.value);
             heading.normalize();
-            console.log("From: " + pos.value.key() + ", To: " + target.key() + ", " + heading.key());
+            //console.log("From: " + pos.value.key() + ", To: " + target.key() + ", " + heading.key());
 
             return new CActionFire(new Vect2D(pos.value.x, pos.value.y), heading);
         }
         return undefined;
+    }
+
+    public info(): string {
+        return "FireAt"
     }
 }

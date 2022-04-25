@@ -100,6 +100,7 @@ export class Planner<T> {
                 }
             }
         }
+        console.log("[BuildPlanning] new planning built for " + agent.name + ": " + this.planning.map(task => task.info()).join(", "));
         //this.planning = this.planning.reverse();
     }
 

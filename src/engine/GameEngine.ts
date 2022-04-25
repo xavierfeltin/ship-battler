@@ -27,6 +27,7 @@ import { SDetectShip } from "./ecs/systems/SDetectShip";
 import { CCanvas } from "./ecs/components/CCanvas";
 import { SRenderMissile } from "./ecs/systems/SRenderMissile";
 import { SFire } from "./ecs/systems/SFire";
+import { SBuildShipDomain } from "./ecs/systems/SBuildShipDomain";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -49,17 +50,17 @@ export class GameEngine {
         this.addCanvas();
         this.addArea();
         this.addTimeFrame();
-        /*
+
         this.addShip({
             position: new Vect2D(200, 200),
             hasShipSensor: true,
             speed: 5
         });
-        */
+
         this.addShip({
             position: new Vect2D(500, 500),
             hasShipSensor: false,
-            speed: 7
+            speed: 6
         });
 
         this.addBot();
@@ -140,8 +141,9 @@ export class GameEngine {
     private addBot() {
         this.ecs.addSystem("BuildMap", new SBuildMap(0), ESystems.BOT);
         this.ecs.addSystem("DetectShip", new SDetectShip(1), ESystems.BOT);
-        this.ecs.addSystem("Planify", new SPlanify(2), ESystems.BOT);
-        this.ecs.addSystem("Fire", new SFire(3), ESystems.BOT);
+        this.ecs.addSystem("BuildShipDomain", new SBuildShipDomain(2), ESystems.BOT);
+        this.ecs.addSystem("Planify", new SPlanify(3), ESystems.BOT);
+        this.ecs.addSystem("Fire", new SFire(4), ESystems.BOT);
     }
 
     private addPhysics() {

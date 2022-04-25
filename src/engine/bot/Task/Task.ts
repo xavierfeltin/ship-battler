@@ -30,4 +30,8 @@ export class Task<T> {
     public operate(agent: IEntity): IComponent | undefined {
         return undefined;
     }
+
+    public info(): string {
+        return "";
+    }
 }
