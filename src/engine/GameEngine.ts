@@ -49,11 +49,13 @@ export class GameEngine {
         this.addCanvas();
         this.addArea();
         this.addTimeFrame();
+        /*
         this.addShip({
             position: new Vect2D(200, 200),
             hasShipSensor: true,
             speed: 5
         });
+        */
         this.addShip({
             position: new Vect2D(500, 500),
             hasShipSensor: false,
@@ -115,8 +117,8 @@ export class GameEngine {
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: config.hasShipSensor ? 1 : 0})));
-        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1}>());
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: 2})));
+        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));

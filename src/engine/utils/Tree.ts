@@ -21,6 +21,10 @@ export class Tree<T> {
         }
     }
 
+    public getTree(): ITNode<T>[] {
+        return this.nodes;
+    }
+
     public addToNode(objects: T[], node: ITNode<T> | undefined): ITNode<T>[]
     {
         const children: ITNode<T>[] = [];
@@ -37,31 +41,31 @@ export class Tree<T> {
         })
 
         if (node === undefined) {
-            this.nodes.concat(children);
+            this.nodes = this.nodes.concat(children);
         }
         else {
-            node.children.concat(children);
+            node.children = node.children.concat(children);
         }
         return children;
     }
 
-    public removeNode(node: ITNode<T>): ITNode<T> | undefined
+    public removeNode(node: ITNode<T> | undefined): ITNode<T> | undefined
     {
-        const parent = node.parent;
-        if(parent === undefined) {
-            return undefined
+        if (node === undefined) {
+            return undefined;
         }
 
-        const index = parent.children.indexOf(node, 0);
+        let children = node.parent === undefined ? this.nodes : node.parent.children;
+        const index = children.indexOf(node, 0);
         if (index > -1) {
-            parent.children.splice(index, 1);
+            children.splice(index, 1);
         }
 
-        if (parent.children.length > index) {
-            const leftSibling = index === 0 ? undefined : parent.children[index - 1];
-            parent.children[index].leftSibling = leftSibling;
+        if (children.length > index) {
+            const leftSibling = index === 0 ? undefined : children[index - 1];
+            children[index].leftSibling = leftSibling;
         }
-        return parent;
+        return node.parent;
     }
 
     public getFirstChildFromNode(node: ITNode<T> | undefined): ITNode<T> | undefined {

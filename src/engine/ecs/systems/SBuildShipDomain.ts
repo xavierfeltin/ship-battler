@@ -17,16 +17,18 @@ export class SBuildShipDomain implements ISystem {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
 
     for (let entity of entities) {
-        let cDomain =  entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1}>;
+        let cDomain =  entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2}>;
         let targetPos = entity.components.get(CShipSensor.id) as CShipSensor;
 
         if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
             let pos = entity.components.get(CPosition.id) as CPosition;
             let isInRange = targetPos.detectedPos.distance2(pos.value) < 10000 ? 1 : 0;
             cDomain.domain.updateWorldState(cDomain.domain.indexes.isInRange, isInRange);
+            cDomain.domain.updateWorldState(cDomain.domain.indexes.hasWeapon, 1);
         }
         else {
             cDomain.domain.updateWorldState(cDomain.domain.indexes.isInRange, 0);
+            cDomain.domain.updateWorldState(cDomain.domain.indexes.hasWeapon, 0);
         }
         entity.components.set(CDomain.id, cDomain);
     }

@@ -6,6 +6,7 @@ export class ShipDomain<T extends {isMoving: number; isInRange: number; hasWeapo
         super(indexes);
         this.worldState.changeState(this.indexes.isMoving, 0);
         this.worldState.changeState(this.indexes.isInRange, 0);
+        this.worldState.changeState(this.indexes.hasWeapon, 0);
 
         this.pushTask(new CTBeShip<T>(indexes));
     }

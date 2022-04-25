@@ -55,6 +55,8 @@ export class Planner<T> {
     private buildPlanning(domain: Domain<T>, agent: IEntity): void {
         console.log("[BuildPlanning] generate a new planning for agent " + agent.name);
 
+        debugger;
+
         let availableTasks: (Task<T> | CompoundTask<T>)[] = domain.getAvailableTasks();
         let worldState = domain.getWorldState();
 
@@ -128,14 +130,15 @@ export class Planner<T> {
         }
 
         let nextNode: ITNode<Task<T> | CompoundTask<T> | Method<T> | undefined> | undefined = currentNode
-        let endOfSequenceReached: boolean = false;
-        while (nextNode === currentNode && !endOfSequenceReached) {
+        let hasReachedTheSequenceEnd: boolean = false;
+        let hasAdvanced = false;
+        while (!(hasAdvanced || hasReachedTheSequenceEnd) && nextNode!==undefined) {
             if (nextNode.object instanceof Task) {
                 // Get next node on the same level
                 const parent: ITNode<Task<T> | CompoundTask<T> | Method<T> | undefined> | undefined = nextNode.parent;
                 nextNode = history.popFrontChildFromNode(nextNode.parent);
                 if (nextNode === undefined && parent === undefined) {
-                    endOfSequenceReached = true;
+                    hasReachedTheSequenceEnd = true;
                 }
                 else if (nextNode === undefined) {
                     // It was the last node on this level go back to compound task parent
@@ -144,18 +147,23 @@ export class Planner<T> {
                     compoundTaskNode.children = []; //Remove other alternative methods since the sequence has been successful
                     nextNode = compoundTaskNode;
                 }
+                else {
+                    // Evaluate next node in the same level
+                    hasAdvanced = true;
+                }
             }
             else if (nextNode.object instanceof CompoundTask) {
                 if (nextNode.children.length > 0) {
                     // Advance deeper in the first available method to solve the compound task
                     nextNode = history.popFrontChildFromNode(currentNode);
+                    hasAdvanced = true;
                 }
                 else {
                     // Get next node on the same level
                     const parent: ITNode<Task<T> | CompoundTask<T> | Method<T> | undefined> | undefined = nextNode.parent;
                     nextNode = history.popFrontChildFromNode(parent);
                     if (nextNode === undefined && parent === undefined) {
-                        endOfSequenceReached = true;
+                        hasReachedTheSequenceEnd = true;
                     }
                     else if (nextNode === undefined) {
                         // It was the last node on this level go back to compound task parent
@@ -164,12 +172,17 @@ export class Planner<T> {
                         compoundTaskNode.children = []; //Remove other alternative methods since the sequence has been successful
                         nextNode = compoundTaskNode;
                     }
+                    else {
+                        // Evaluate next node in the same level
+                        hasAdvanced = true;
+                    }
                 }
             }
             else if (nextNode.object instanceof Method) {
                 if (nextNode.children.length > 0) {
                     // Advance deeper in the method's tasks
                     nextNode = history.popFrontChildFromNode(nextNode);
+                    hasAdvanced = true;
                 }
                 else {
                     // Should not happened except if the method has been defined without any task (considered always successful)
@@ -190,14 +203,16 @@ export class Planner<T> {
         }
 
         let nextNode: ITNode<Task<T> | CompoundTask<T> | Method<T> | undefined> | undefined = currentNode
-        let endOfSequenceReached: boolean = false;
-        while (nextNode === currentNode && !endOfSequenceReached) {
+        let hasReachedTheSequenceEnd: boolean = false;
+        let hasFoundAlternative = false;
+        while (!(hasFoundAlternative || hasReachedTheSequenceEnd) && nextNode!==undefined) {
             // Each level of compound task, a sequence is rollbacked
             this.rollbackSequence();
 
             if (nextNode.object instanceof Task) {
                 if (nextNode.parent === undefined) {
-                    endOfSequenceReached = true;
+                    hasReachedTheSequenceEnd = true;
+                    nextNode = undefined;
                 }
                 else {
                     // Try next available method of the parent compound task
@@ -210,21 +225,27 @@ export class Planner<T> {
                 if (nextNode.children.length > 0) {
                     // Try next alternative method
                     nextNode = history.popFrontChildFromNode(currentNode);
+                    hasFoundAlternative = true;
                 }
                 else {
                     if (nextNode.parent === undefined) {
-                        endOfSequenceReached = true;
+                        // The compound task was at the root level, if it fails all the sequence of the planning has failed
+                        hasReachedTheSequenceEnd = true;
+                        nextNode = undefined;
                     }
                     else {
                         // Try next available method of the parent compound task
                         const methodNode = nextNode.parent;
                         const compoundTaskNode = methodNode.parent;
                         nextNode = compoundTaskNode;
+                        hasFoundAlternative = true;
                     }
                 }
             }
             else {
                 console.error("[alternateInSequence] the node is not a Task or a CompoundTask");
+                nextNode = undefined;
+                hasReachedTheSequenceEnd = true;
             }
         }
         return nextNode;
