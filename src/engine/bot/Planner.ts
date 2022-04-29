@@ -55,8 +55,6 @@ export class Planner<T> {
     private buildPlanning(domain: Domain<T>, agent: IEntity): void {
         console.log("[BuildPlanning] generate a new planning for agent " + agent.name);
 
-        debugger;
-
         let availableTasks: (Task<T> | CompoundTask<T>)[] = domain.getAvailableTasks();
         let worldState = domain.getWorldState();
 

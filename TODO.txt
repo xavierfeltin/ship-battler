@@ -1,0 +1,4 @@
+Vérifier que le planning en cours est toujours valide, sinon reforcer un planning
+Trouver pourquoi il y a des freeze par moment
+Ajouter un système de récolte d'astéroide
+Ajouter les dégats et la récupération d'astéroide après la mort

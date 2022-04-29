@@ -3,19 +3,28 @@ import { TNavigateTo } from "./TNavigateTo";
 import { Method } from "./Method";
 import { CTAttackEnnemy } from "./CTAttackEnnemy";
 import { WorldState } from "../WorldState";
+import { CTMineAsteroid } from "./CTMineAsteroid";
 
-export class CTBeShip<T extends {isMoving: number; isInRange: number; hasWeapon: number;}> extends CompoundTask<T> {
+export class CTBeShip<T extends {isMoving: number; isInRange: number; hasWeapon: number; isMining: number;}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];
 
-        let predicateKill = (worldState: WorldState): boolean => {
+        let predicateAttack = (worldState: WorldState): boolean => {
             const hasWeapon: boolean = worldState.getState(indexes.hasWeapon) === 1;
-            return hasWeapon;
+            const isNotMining: boolean = worldState.getState(indexes.isMining) === 0;
+            return hasWeapon && isNotMining;
         }
-        let method = new Method<T>(predicateKill);
+        let method = new Method<T>(predicateAttack);
         method.pushTask(new CTAttackEnnemy<T>(indexes));
         method.pushTask(new TNavigateTo<T>(indexes));
+        this.methods.push(method);
+
+        let predicateMine = (worldState: WorldState): boolean => {
+            return true;
+        }
+        method = new Method<T>(predicateMine);
+        method.pushTask(new CTMineAsteroid<T>(indexes));
         this.methods.push(method);
 
         let predicateFind = (worldState: WorldState): boolean => {

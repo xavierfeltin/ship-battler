@@ -28,6 +28,10 @@ import { CCanvas } from "./ecs/components/CCanvas";
 import { SRenderMissile } from "./ecs/systems/SRenderMissile";
 import { SFire } from "./ecs/systems/SFire";
 import { SBuildShipDomain } from "./ecs/systems/SBuildShipDomain";
+import { AsteroidResources } from "./resources/RAsteroid";
+import { CAsteroid } from "./ecs/components/CAsteroid";
+import { SRenderAsteroid } from "./ecs/systems/SRenderAsteroid";
+import { CLife } from "./ecs/components/CLife";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -62,6 +66,8 @@ export class GameEngine {
             hasShipSensor: false,
             speed: 6
         });
+
+        this.addAsteroid();
 
         this.addBot();
         this.addPhysics();
@@ -118,7 +124,7 @@ export class GameEngine {
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: 2})));
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
@@ -133,6 +139,21 @@ export class GameEngine {
             width: 40,
             height: 40,
             sprite: ShipResources.GetSpriteBase64(),
+            ctx: this.ctx
+        }));
+        this.ecs.addEntity(components);
+    }
+
+    private addAsteroid() {
+        let components = new Map<string, IComponent>();
+        components.set(CAsteroid.id, new CAsteroid());
+        components.set(CRigidBody.id, new CRigidBody(20));
+        components.set(CPosition.id, new CPosition(new Vect2D(400, 600)));
+        components.set(CLife.id, new CLife(100));
+        components.set(CRenderer.id, new CRenderer({
+            width: 40,
+            height: 40,
+            sprite: AsteroidResources.GetSpriteBase64(),
             ctx: this.ctx
         }));
         this.ecs.addEntity(components);
@@ -155,5 +176,6 @@ export class GameEngine {
         this.ecs.addSystem("RenderArea", new SRenderArea(0), ESystems.RENDERERS);
         this.ecs.addSystem("RenderShip", new SRenderShip(1), ESystems.RENDERERS);
         this.ecs.addSystem("RenderMissile", new SRenderMissile(2), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderAsteroid", new SRenderAsteroid(3), ESystems.RENDERERS);
     }
 }

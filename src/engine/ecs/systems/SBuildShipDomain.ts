@@ -4,6 +4,9 @@ import { CShip } from '../components/CShip';
 import { CShipSensor } from '../components/CShipSensor';
 import { CPosition } from '../components/CPosition';
 import { CDomain } from '../components/CDomain';
+import { IEntity } from '../IEntity';
+import { CAsteroidSensor } from '../components/CAsteroidSensor';
+import { CActionMine } from '../components/CActionMine';
 
 export class SBuildShipDomain implements ISystem {
   public id = 'BuildShipDomain';
@@ -15,22 +18,47 @@ export class SBuildShipDomain implements ISystem {
 
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
-    for (let entity of entities) {
-        let cDomain =  entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2}>;
-        let targetPos = entity.components.get(CShipSensor.id) as CShipSensor;
+    for (let ship of entities) {
+        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3}>;
+        this.updateAttackInformation(ship, cDomain);
+        this.updateMiningInformation(ship, cDomain);
 
-        if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
-          debugger;
-            let pos = entity.components.get(CPosition.id) as CPosition;
-            let isInRange = targetPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
-            cDomain.domain.updateWorldState(cDomain.domain.indexes.isInRange, isInRange);
-            cDomain.domain.updateWorldState(cDomain.domain.indexes.hasWeapon, 1);
-        }
-        else {
-            cDomain.domain.updateWorldState(cDomain.domain.indexes.isInRange, 0);
-            cDomain.domain.updateWorldState(cDomain.domain.indexes.hasWeapon, 0);
-        }
-        entity.components.set(CDomain.id, cDomain);
+        ship.components.set(CDomain.id, cDomain);
+    }
+  }
+
+  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3}>): void {
+    let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
+    if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
+        let pos = ship.components.get(CPosition.id) as CPosition;
+        let isInRange = targetPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
+        domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
+        domain.domain.updateWorldState(domain.domain.indexes.hasWeapon, 1);
+    }
+    else {
+        domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+        domain.domain.updateWorldState(domain.domain.indexes.hasWeapon, 0);
+    }
+  }
+
+  private updateMiningInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, isMining: 3}>): void {
+    let mining = ship.components.get(CActionMine.id) as CActionMine;
+    if (mining !== undefined) {
+      domain.domain.updateWorldState(domain.domain.indexes.isInRange, 1);
+      domain.domain.updateWorldState(domain.domain.indexes.isMining, 1);
+    }
+    else
+    {
+      let asteroidPos = ship.components.get(CAsteroidSensor.id) as CAsteroidSensor;
+      if (asteroidPos !== undefined && asteroidPos.detectedPos !== undefined) {
+        let pos = ship.components.get(CPosition.id) as CPosition;
+        let isInRange = asteroidPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
+        domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
+      }
+      else {
+        domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+      }
+      domain.domain.updateWorldState(domain.domain.indexes.isMining, 0);
     }
   }
 }
