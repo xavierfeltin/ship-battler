@@ -19,7 +19,7 @@ export class SBuildShipDomain implements ISystem {
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
     for (let ship of entities) {
-        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3}>;
+        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4}>;
         this.updateAttackInformation(ship, cDomain);
         this.updateMiningInformation(ship, cDomain);
 
@@ -27,25 +27,26 @@ export class SBuildShipDomain implements ISystem {
     }
   }
 
-  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3}>): void {
+  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2}>): void {
     let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
     if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
         let pos = ship.components.get(CPosition.id) as CPosition;
         let isInRange = targetPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
         domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
-        domain.domain.updateWorldState(domain.domain.indexes.hasWeapon, 1);
+        domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 1);
     }
     else {
         domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
-        domain.domain.updateWorldState(domain.domain.indexes.hasWeapon, 0);
+        domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 0);
     }
   }
 
-  private updateMiningInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, isMining: 3}>): void {
+  private updateMiningInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4}>): void {
     let mining = ship.components.get(CActionMine.id) as CActionMine;
     if (mining !== undefined) {
       domain.domain.updateWorldState(domain.domain.indexes.isInRange, 1);
       domain.domain.updateWorldState(domain.domain.indexes.isMining, 1);
+      domain.domain.updateWorldState(domain.domain.indexes.hasAsteroidToMine, 1);
     }
     else
     {
@@ -54,9 +55,11 @@ export class SBuildShipDomain implements ISystem {
         let pos = ship.components.get(CPosition.id) as CPosition;
         let isInRange = asteroidPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
         domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
+        domain.domain.updateWorldState(domain.domain.indexes.hasAsteroidToMine, 1);
       }
       else {
         domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+        domain.domain.updateWorldState(domain.domain.indexes.hasAsteroidToMine, 0);
       }
       domain.domain.updateWorldState(domain.domain.indexes.isMining, 0);
     }

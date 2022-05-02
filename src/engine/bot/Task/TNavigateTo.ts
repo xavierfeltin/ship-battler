@@ -13,22 +13,30 @@ import { MyMath } from "../../utils/MyMath";
 import { Task } from "./Task";
 import { WorldState } from "../WorldState";
 import { CShipSensor } from "../../ecs/components/CShipSensor";
+import { CAsteroidSensor } from "../../ecs/components/CAsteroidSensor";
 
+export enum NAVMODE {
+    AGRESSIVE,
+    MINING,
+    RANDOM
+};
 export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extends Task<T> {
     public static id: string = "GoTo";
     public id: string = TNavigateTo.id;
 
     private from: Vect2D;
     private to: Vect2D;
+    private navMode: NAVMODE;
     private map: GridWithWeights;
     private path: Vect2D[];
     private nextPoint: Vect2D | undefined;
 
-    public constructor(indexes: T) {
+    public constructor(indexes: T, mode: NAVMODE) {
         super(indexes);
 
         this.from = new Vect2D(0, 0);
         this.to = new Vect2D(0, 0);
+        this.navMode = mode;
         this.map = new GridWithWeights(0, 0, 0);
         this.path = [];
     }
@@ -85,16 +93,26 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
         this.from = fromPosition.value;
 
-        const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
-        if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
-            this.to = shipSensor.detectedPos;
-            console.log("Follow ship target " + shipSensor.detectedShipId);
-        }
-        else {
-            // Define a random new target (see how to do something smarter)
-            let destX = Math.floor(Math.random() * 1200);
-            let destY = Math.floor(Math.random() * 800);
-            this.to = new Vect2D(destX, destY);
+        switch(this.navMode) {
+            case NAVMODE.AGRESSIVE:
+                const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
+                if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
+                    this.to = shipSensor.detectedPos;
+                    console.log("Follow ship target " + shipSensor.detectedShipId);
+                }
+                break;
+            case NAVMODE.MINING:
+                const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
+                if (asteroidSensor !== undefined && asteroidSensor.detectedPos !== undefined) {
+                    this.to = asteroidSensor.detectedPos;
+                    console.log("Follow asteroid target " + asteroidSensor.detectedAsteroidId);
+                }
+                break;
+            default:
+                // Define a random new target (see how to do something smarter)
+                let destX = Math.floor(Math.random() * 1200);
+                let destY = Math.floor(Math.random() * 800);
+                this.to = new Vect2D(destX, destY);
         }
 
         const agentMap = agent.components.get(CMap.id) as CMap;

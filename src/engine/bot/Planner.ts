@@ -38,6 +38,11 @@ export class Planner<T> {
 
             this.actionBeingSolved = this.planning.pop();
         }
+        else if (!this.actionBeingSolved.canBeRun(domain.getWorldState())) {
+            console.log("[Planify] the current action is can no longer be solved. Replanify");
+            this.buildPlanning(domain, agent);
+            this.actionBeingSolved = this.planning.pop();
+        }
         // else the current action is still being solved
         const nextActionToPerformByAgent = this.solve(agent);
         return nextActionToPerformByAgent;
@@ -54,6 +59,7 @@ export class Planner<T> {
 
     private buildPlanning(domain: Domain<T>, agent: IEntity): void {
         console.log("[BuildPlanning] generate a new planning for agent " + agent.name);
+        this.planning = [];
 
         let availableTasks: (Task<T> | CompoundTask<T>)[] = domain.getAvailableTasks();
         let worldState = domain.getWorldState();
@@ -99,7 +105,7 @@ export class Planner<T> {
             }
         }
         console.log("[BuildPlanning] new planning built for " + agent.name + ": " + this.planning.map(task => task.info()).join(", "));
-        //this.planning = this.planning.reverse();
+        this.planning = this.planning.reverse();
     }
 
     private saveSequence(taskIndex: number, worldState: WorldState, parent: ITNode<Task<T> | CompoundTask<T> | Method<T> | undefined>): SequenceState<T> {

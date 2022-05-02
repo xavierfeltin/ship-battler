@@ -1,37 +1,39 @@
 import { CompoundTask } from "./CompoundTask";
-import { TNavigateTo } from "./TNavigateTo";
+import { NAVMODE, TNavigateTo } from "./TNavigateTo";
 import { Method } from "./Method";
 import { CTAttackEnnemy } from "./CTAttackEnnemy";
 import { WorldState } from "../WorldState";
 import { CTMineAsteroid } from "./CTMineAsteroid";
 
-export class CTBeShip<T extends {isMoving: number; isInRange: number; hasWeapon: number; isMining: number;}> extends CompoundTask<T> {
+export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; isMining: number;}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];
 
-        let predicateAttack = (worldState: WorldState): boolean => {
-            const hasWeapon: boolean = worldState.getState(indexes.hasWeapon) === 1;
-            const isNotMining: boolean = worldState.getState(indexes.isMining) === 0;
-            return hasWeapon && isNotMining;
-        }
-        let method = new Method<T>(predicateAttack);
-        method.pushTask(new CTAttackEnnemy<T>(indexes));
-        method.pushTask(new TNavigateTo<T>(indexes));
-        this.methods.push(method);
-
         let predicateMine = (worldState: WorldState): boolean => {
-            return true;
+            const hasAsteroidToMine: boolean = worldState.getState(indexes.hasAsteroidToMine) === 1;
+            return hasAsteroidToMine;
         }
-        method = new Method<T>(predicateMine);
+        let method = new Method<T>(predicateMine);
         method.pushTask(new CTMineAsteroid<T>(indexes));
         this.methods.push(method);
 
+        let predicateAttack = (worldState: WorldState): boolean => {
+            const hasEnnemyToAttack: boolean = worldState.getState(indexes.hasEnnemyToAttack) === 1;
+            const isNotMining: boolean = worldState.getState(indexes.isMining) === 0;
+            return hasEnnemyToAttack && isNotMining;
+        }
+        method = new Method<T>(predicateAttack);
+        method.pushTask(new CTAttackEnnemy<T>(indexes));
+        //method.pushTask(new TNavigateTo<T>(indexes));
+        this.methods.push(method);
+
         let predicateFind = (worldState: WorldState): boolean => {
-            return true;
+            const isNotMining: boolean = worldState.getState(indexes.isMining) === 0;
+            return isNotMining;
         }
         method = new Method<T>(predicateFind);
-        method.pushTask(new TNavigateTo<T>(indexes));
+        method.pushTask(new TNavigateTo<T>(indexes, NAVMODE.RANDOM));
         this.methods.push(method);
     }
 }

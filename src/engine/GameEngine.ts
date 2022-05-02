@@ -32,6 +32,10 @@ import { AsteroidResources } from "./resources/RAsteroid";
 import { CAsteroid } from "./ecs/components/CAsteroid";
 import { SRenderAsteroid } from "./ecs/systems/SRenderAsteroid";
 import { CLife } from "./ecs/components/CLife";
+import { SRenderMiningBeam } from "./ecs/systems/SRenderMiningBeam";
+import { SMine } from "./ecs/systems/SMine";
+import { SDetectAsteroid } from "./ecs/systems/SDetectAsteroid";
+import { CAsteroidSensor } from "./ecs/components/CAsteroidSensor";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -61,11 +65,13 @@ export class GameEngine {
             speed: 5
         });
 
+        /*
         this.addShip({
             position: new Vect2D(500, 500),
             hasShipSensor: false,
             speed: 6
         });
+        */
 
         this.addAsteroid();
 
@@ -124,13 +130,14 @@ export class GameEngine {
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip());
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasWeapon: 2, isMining: 3})));
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));
         components.set(COrientation.id, new COrientation(0));
         components.set(CVelocity.id, new CVelocity(new Vect2D(0, 0)));
+        components.set(CAsteroidSensor.id, new CAsteroidSensor());
         if (config.hasShipSensor)
         {
             components.set(CShipSensor.id, new CShipSensor());
@@ -161,21 +168,24 @@ export class GameEngine {
 
     private addBot() {
         this.ecs.addSystem("BuildMap", new SBuildMap(0), ESystems.BOT);
-        this.ecs.addSystem("DetectShip", new SDetectShip(1), ESystems.BOT);
-        this.ecs.addSystem("BuildShipDomain", new SBuildShipDomain(2), ESystems.BOT);
-        this.ecs.addSystem("Planify", new SPlanify(3), ESystems.BOT);
-        this.ecs.addSystem("Fire", new SFire(4), ESystems.BOT);
+        this.ecs.addSystem("DetectAsteroid", new SDetectAsteroid(1), ESystems.BOT);
+        this.ecs.addSystem("DetectShip", new SDetectShip(2), ESystems.BOT);
+        this.ecs.addSystem("BuildShipDomain", new SBuildShipDomain(3), ESystems.BOT);
+        this.ecs.addSystem("Planify", new SPlanify(4), ESystems.BOT);
     }
 
     private addPhysics() {
         this.ecs.addSystem("Orientate", new SOrientate(0), ESystems.PHYSICS);
         this.ecs.addSystem("Move", new SMove(1), ESystems.PHYSICS);
+        this.ecs.addSystem("Mine", new SMine(2), ESystems.BOT);
+        this.ecs.addSystem("Fire", new SFire(3), ESystems.BOT);
     }
 
     private addRendering() {
         this.ecs.addSystem("RenderArea", new SRenderArea(0), ESystems.RENDERERS);
         this.ecs.addSystem("RenderShip", new SRenderShip(1), ESystems.RENDERERS);
         this.ecs.addSystem("RenderMissile", new SRenderMissile(2), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderMiningBeam", new SRenderMiningBeam(2), ESystems.RENDERERS);
         this.ecs.addSystem("RenderAsteroid", new SRenderAsteroid(3), ESystems.RENDERERS);
     }
 }

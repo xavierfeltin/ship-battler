@@ -12,7 +12,24 @@ export class CSpeed implements IComponent {
         this._value = value;
     }
 
+  private _maxValue: number;
+  public get maxValue(): number {
+    return this._maxValue;
+  }
+  public set maxValue(value: number) {
+    this._maxValue = value;
+  }
+
   constructor(v: number) {
     this._value = v;
+    this._maxValue = v;
+  }
+
+  public stop() {
+    this.value = 0;
+  }
+
+  public go() {
+    this.value = this.maxValue;
   }
 }

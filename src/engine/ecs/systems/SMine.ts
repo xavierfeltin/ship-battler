@@ -10,6 +10,7 @@ import { IEntity } from '../IEntity';
 import { CLife } from '../components/CLife';
 import { CTarget } from '../components/CTarget';
 import { CMiningBeam } from '../components/CMiningBeam';
+import { CSpeed } from '../components/CSpeed';
 import { CRenderer } from '../components/CRenderer';
 
 export class SMine implements ISystem {
@@ -34,21 +35,38 @@ export class SMine implements ISystem {
             if (asteroid !== undefined) {
                 const isFullyMined = this.mineAsteroid(asteroid, ecs);
                 if (isFullyMined) {
+                    this.restartShipAfterMining(ship, ecs);
                     ecs.removeComponentOnEntity(ship, mine);
                     ecs.removeEntity(asteroid.name);
                 }
                 else {
+                    this.stopShipForMining(ship, ecs);
                     this.addMiningBeam(mine, ecs, canvas.components.get(CCanvas.id) as CCanvas);
                 }
             }
         }
     }
 
+    private stopShipForMining(ship: IEntity, ecs: ECSManager): void {
+        const speed = ship.components.get(CSpeed.id) as CSpeed;
+        speed.stop();
+        ecs.addOrUpdateComponentOnEntity(ship, speed);
+    }
+
+    private restartShipAfterMining(ship: IEntity, ecs: ECSManager): void {
+        const speed = ship.components.get(CSpeed.id) as CSpeed;
+        speed.go();
+        ecs.addOrUpdateComponentOnEntity(ship, speed);
+    }
+
     private mineAsteroid(asteroid: IEntity, ecs: ECSManager): boolean {
         let life: CLife = asteroid.components.get(CLife.id) as CLife;
-        life.value = life.value - 1;
-        ecs.addOrUpdateComponentOnEntity(asteroid, life);
-        return life.value > 0;
+        if (life !== undefined) {
+            life.value = life.value - 1;
+            ecs.addOrUpdateComponentOnEntity(asteroid, life);
+            return life.value > 0;
+        }
+        return false;
     }
 
     private addMiningBeam(mineAction: CActionMine, ecs: ECSManager, canvas: CCanvas) {
