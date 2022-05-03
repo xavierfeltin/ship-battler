@@ -129,7 +129,7 @@ export class GameEngine {
 
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
-        components.set(CShip.id, new CShip());
+        components.set(CShip.id, new CShip(100, 400));
         components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2}>());
         components.set(CRigidBody.id, new CRigidBody(20));

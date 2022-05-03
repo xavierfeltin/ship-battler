@@ -18,24 +18,26 @@ export class SDetectAsteroid implements ISystem {
     const asteroids = ecs.selectEntitiesFromComponents([CAsteroid.id, CPosition.id]);
 
     for (let ship of entities) {
-        const shipPos =  ship.components.get(CPosition.id) as CPosition;
-        let minDistance = Infinity;
-        let targetPos = undefined;
-        let targetName = "";
+      const shipPos =  ship.components.get(CPosition.id) as CPosition;
+      let minDistance = Infinity;
+      let targetPos = undefined;
+      let targetName = "";
 
-        for (let asteroid of asteroids) {
-            const asteroidPos =  asteroid.components.get(CPosition.id) as CPosition;
-            const distance = asteroidPos.value.distance2(shipPos.value);
-            if (distance < minDistance) {
-                targetPos = asteroidPos.value;
-                targetName = ship.name;
-            }
-        }
+      for (let asteroid of asteroids) {
+          const asteroidPos =  asteroid.components.get(CPosition.id) as CPosition;
+          const distance = asteroidPos.value.distance2(shipPos.value);
+          if (distance < minDistance) {
+              targetPos = asteroidPos.value;
+              targetName = asteroid.name;
+          }
+      }
 
+      if (asteroids.length > 0) {
         let sensor = ship.components.get(CAsteroidSensor.id) as CAsteroidSensor;
         sensor.detectedPos = targetPos;
         sensor.detectedAsteroidId = targetName;
         ship.components.set(CAsteroidSensor.id, sensor);
+      }
     }
   }
 }

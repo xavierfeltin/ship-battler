@@ -14,6 +14,7 @@ import { Task } from "./Task";
 import { WorldState } from "../WorldState";
 import { CShipSensor } from "../../ecs/components/CShipSensor";
 import { CAsteroidSensor } from "../../ecs/components/CAsteroidSensor";
+import { CShip } from "../../ecs/components/CShip";
 
 export enum NAVMODE {
     AGRESSIVE,
@@ -27,6 +28,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
     private from: Vect2D;
     private to: Vect2D;
     private navMode: NAVMODE;
+    private stopAtDistance: number;
     private map: GridWithWeights;
     private path: Vect2D[];
     private nextPoint: Vect2D | undefined;
@@ -37,6 +39,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         this.from = new Vect2D(0, 0);
         this.to = new Vect2D(0, 0);
         this.navMode = mode;
+        this.stopAtDistance = 0;
         this.map = new GridWithWeights(0, 0, 0);
         this.path = [];
     }
@@ -64,7 +67,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
 
         this.from = fromPosition.value;
-        if (this.nextPoint === undefined || this.from.distance(this.nextPoint) < rigidBody.radius) {
+        if (this.nextPoint === undefined || this.from.distance(this.nextPoint) <= this.stopAtDistance) {
             const waypoint  = this.getNextWaypoint();
 
             /*
@@ -91,6 +94,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
 
     private definePath(agent: IEntity) {
         const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
+        const shipInfo: CShip = agent.components.get(CShip.id) as CShip;
         this.from = fromPosition.value;
 
         switch(this.navMode) {
@@ -100,6 +104,9 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                     this.to = shipSensor.detectedPos;
                     console.log("Follow ship target " + shipSensor.detectedShipId);
                 }
+                if (shipInfo !== undefined) {
+                    this.stopAtDistance = shipInfo.shootingDistance;
+                }
                 break;
             case NAVMODE.MINING:
                 const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
@@ -107,12 +114,20 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                     this.to = asteroidSensor.detectedPos;
                     console.log("Follow asteroid target " + asteroidSensor.detectedAsteroidId);
                 }
+                if (shipInfo !== undefined) {
+                    this.stopAtDistance = shipInfo.miningDistance;
+                }
                 break;
             default:
                 // Define a random new target (see how to do something smarter)
                 let destX = Math.floor(Math.random() * 1200);
                 let destY = Math.floor(Math.random() * 800);
                 this.to = new Vect2D(destX, destY);
+
+                const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
+                if (rigidBody !== undefined) {
+                    this.stopAtDistance = rigidBody.radius;
+                }
         }
 
         const agentMap = agent.components.get(CMap.id) as CMap;
