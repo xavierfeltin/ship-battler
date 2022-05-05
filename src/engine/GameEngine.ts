@@ -185,7 +185,7 @@ export class GameEngine {
         this.ecs.addSystem("RenderArea", new SRenderArea(0), ESystems.RENDERERS);
         this.ecs.addSystem("RenderShip", new SRenderShip(1), ESystems.RENDERERS);
         this.ecs.addSystem("RenderMissile", new SRenderMissile(2), ESystems.RENDERERS);
-        this.ecs.addSystem("RenderMiningBeam", new SRenderMiningBeam(2), ESystems.RENDERERS);
-        this.ecs.addSystem("RenderAsteroid", new SRenderAsteroid(3), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderMiningBeam", new SRenderMiningBeam(3), ESystems.RENDERERS);
+        this.ecs.addSystem("RenderAsteroid", new SRenderAsteroid(4), ESystems.RENDERERS);
     }
 }

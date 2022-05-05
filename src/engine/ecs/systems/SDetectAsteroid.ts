@@ -32,12 +32,16 @@ export class SDetectAsteroid implements ISystem {
           }
       }
 
+      let sensor = ship.components.get(CAsteroidSensor.id) as CAsteroidSensor;
       if (asteroids.length > 0) {
-        let sensor = ship.components.get(CAsteroidSensor.id) as CAsteroidSensor;
         sensor.detectedPos = targetPos;
         sensor.detectedAsteroidId = targetName;
-        ship.components.set(CAsteroidSensor.id, sensor);
       }
+      else {
+        sensor.detectedPos = undefined;
+        sensor.detectedAsteroidId = "";
+      }
+      ship.components.set(CAsteroidSensor.id, sensor);
     }
   }
 }

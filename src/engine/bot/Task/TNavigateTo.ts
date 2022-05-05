@@ -123,6 +123,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                 let destX = Math.floor(Math.random() * 1200);
                 let destY = Math.floor(Math.random() * 800);
                 this.to = new Vect2D(destX, destY);
+                console.log("Go to random place " + destX + " - " + destY);
 
                 const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
                 if (rigidBody !== undefined) {

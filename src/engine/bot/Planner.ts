@@ -30,16 +30,19 @@ export class Planner<T> {
         // If action being solved is over or no longer valid, get next action on planning
         // if planning no longer valid, regenerate a planning
         if (this.actionBeingSolved === undefined || this.actionBeingSolved.state === IAActionState.DONE) {
-            console.log("[Planify] the current action is now done. Start a new one");
+            let actionName = this.actionBeingSolved === undefined ? "undefined" : this.actionBeingSolved.info();
+            console.log("[Planify] the current action " + actionName + " is now done. Start a new one");
 
             if(this.planning.length === 0) {
                 this.buildPlanning(domain, agent);
             }
 
             this.actionBeingSolved = this.planning.pop();
+            actionName = this.actionBeingSolved === undefined ? "undefined" : this.actionBeingSolved.info();
+            console.log("[Planify] Start new action " + actionName);
         }
         else if (!this.actionBeingSolved.canBeRun(domain.getWorldState())) {
-            console.log("[Planify] the current action is can no longer be solved. Replanify");
+            console.log("[Planify] the current action " + this.actionBeingSolved.info() + " is can no longer be solved. Replanify");
             this.buildPlanning(domain, agent);
             this.actionBeingSolved = this.planning.pop();
         }

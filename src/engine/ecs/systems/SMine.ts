@@ -36,11 +36,13 @@ export class SMine implements ISystem {
                 const isAsteroidBeingMined = this.mineAsteroid(asteroid, ecs);
                 if (isAsteroidBeingMined) {
                     this.stopShipForMining(ship, ecs);
-                    this.addMiningBeam(mine, ecs, canvas.components.get(CCanvas.id) as CCanvas);
+                    this.addMiningBeam(ship, mine, ecs, canvas.components.get(CCanvas.id) as CCanvas);
                 }
                 else {
                     this.restartShipAfterMining(ship, ecs);
                     ecs.removeComponentOnEntity(ship, mine);
+                    const miningBeam = ship.components.get(CMiningBeam.id) as CMiningBeam;
+                    ecs.removeComponentOnEntity(ship, miningBeam);
                     ecs.removeEntity(asteroid.name);
                 }
             }
@@ -72,11 +74,14 @@ export class SMine implements ISystem {
         return isAsteroidBeingMined;
     }
 
-    private addMiningBeam(mineAction: CActionMine, ecs: ECSManager, canvas: CCanvas) {
+    private addMiningBeam(ship: IEntity, mineAction: CActionMine, ecs: ECSManager, canvas: CCanvas) {
         const heading = mineAction.heading;
         const target = mineAction.target;
-        const origin = mineAction.origin;
 
+        let miningBeam: CMiningBeam = new CMiningBeam(target, heading);
+        ecs.addOrUpdateComponentOnEntity(ship, miningBeam);
+
+        /*
         let components = new Map<string, IComponent>();
         components.set(CMiningBeam.id, new CMiningBeam());
         components.set(CPosition.id, new CPosition(origin));
@@ -91,5 +96,6 @@ export class SMine implements ISystem {
         }));
 
         ecs.addEntity(components);
+        */
     }
 }

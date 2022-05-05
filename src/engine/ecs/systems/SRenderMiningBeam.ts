@@ -6,6 +6,10 @@ import { ISystem } from '../ISystem';
 import { CMissile } from '../components/CMissile';
 import { CMiningBeam } from '../components/CMiningBeam';
 import { CTarget } from '../components/CTarget';
+import { CShip } from '../components/CShip';
+import { CRigidBody } from '../components/CRigidBody';
+import { COrientation } from '../components/COrientation';
+import { MyMath } from '../../utils/MyMath';
 
 export class SRenderMiningBeam implements ISystem {
   public id = 'RenderMiningBeam';
@@ -16,13 +20,23 @@ export class SRenderMiningBeam implements ISystem {
   }
 
   onUpdate(ecs: ECSManager): void {
-    const entities = ecs.selectEntitiesFromComponents([CMiningBeam.id, CPosition.id, CTarget.id, CRenderer.id]);
+    const ships = ecs.selectEntitiesFromComponents([CShip.id, CRigidBody.id, COrientation.id, CMiningBeam.id, CPosition.id]);
 
-    for (let entity of entities) {
-        const pos = entity.components.get(CPosition.id) as CPosition;
-        const target = entity.components.get(CTarget.id) as CTarget;
-        const renderer = entity.components.get(CRenderer.id) as CRenderer;
-        this.render(pos.value, target.value, renderer);
+    for (let ship of ships) {
+        const miningBeam: CMiningBeam = ship.components.get(CMiningBeam.id) as CMiningBeam;
+        let pos = ship.components.get(CPosition.id) as CPosition;
+        const rigidBody = ship.components.get(CRigidBody.id) as CRigidBody;
+        const orientation = ship.components.get(COrientation.id) as COrientation;
+
+        const angleInRadian = MyMath.degreeToRadian(orientation.angle);
+        const beamOrigin = new Vect2D(
+          pos.value.x + rigidBody.radius * Math.cos(angleInRadian),
+          pos.value.y + rigidBody.radius * Math.sin(angleInRadian)
+        );
+
+        const target = miningBeam.target;
+        const renderer = ship.components.get(CRenderer.id) as CRenderer;
+        this.render(beamOrigin, target, renderer);
     }
   }
 
@@ -30,8 +44,8 @@ export class SRenderMiningBeam implements ISystem {
     const origX = (pos.x + 0.5) | 0; //rounded with a bitwise or
     const origY = (pos.y + 0.5) | 0;
 
-    const targetX = (pos.x + 0.5) | 0; //rounded with a bitwise or
-    const targetY = (pos.y + 0.5) | 0;
+    const targetX = (target.x + 0.5) | 0; //rounded with a bitwise or
+    const targetY = (target.y + 0.5) | 0;
 
     let ctx = renderer.attr.ctx;
     ctx.beginPath();

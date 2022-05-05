@@ -28,12 +28,19 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
     }
 
     public operate(agent: IEntity): IComponent | undefined {
-        const mining = agent.components.get(CActionMine.id) as CActionMine;
+        let miningAction: CActionMine | undefined = agent.components.get(CActionMine.id) as CActionMine;
+        if (miningAction !== undefined) {
+            console.log("[MineAT] mining action is underway");
+            //keep mining current asteroid
+            return miningAction;
+        }
 
-        // Start mining the new asteroid detected
         if (this.minedAsteroidID === "") {
+            // Start mining a new asteroid if detected
             const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
-            if (asteroidSensor && asteroidSensor.detectedPos) {
+            if (asteroidSensor && asteroidSensor.detectedPos !== undefined) {
+                console.log("[MineAT] start mining a new asteroid " + asteroidSensor.detectedAsteroidId);
+                this.minedAsteroidID = asteroidSensor.detectedAsteroidId;
                 const target = asteroidSensor.detectedPos;
                 const pos = agent.components.get(CPosition.id) as CPosition;
 
@@ -41,18 +48,22 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
                 heading.normalize();
 
                 this.state = IAActionState.ONGOING;
-                return new CActionMine(new Vect2D(pos.value.x, pos.value.y), heading, target, asteroidSensor.detectedAsteroidId);
+                miningAction = new CActionMine(new Vect2D(pos.value.x, pos.value.y), heading, target, asteroidSensor.detectedAsteroidId);
+            }
+            else {
+                // no asteroid to mine
+                console.log("[MineAT] no asteroid to mine");
+                miningAction = undefined;
             }
         }
-        else if (mining !== undefined) {
-            //keep mining current asteroid
-            return mining;
+        else {
+            // The last mining is over
+            console.log("[MineAT] mining of asteroid" + this.minedAsteroidID + " is now done");
+            this.minedAsteroidID = "";
+            this.state = IAActionState.DONE;
+            miningAction = undefined;
         }
-        // else no asteroid to mine
-
-        this.minedAsteroidID = "";
-        this.state = IAActionState.DONE;
-        return undefined;
+        return miningAction;
     }
 
     public info(): string {

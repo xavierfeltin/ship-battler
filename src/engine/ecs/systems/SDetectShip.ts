@@ -35,8 +35,14 @@ export class SDetectShip implements ISystem {
         }
 
         let sensor = entity.components.get(CShipSensor.id) as CShipSensor;
-        sensor.detectedPos = targetPos;
-        sensor.detectedShipId = targetName;
+        if (ships.length > 0) {
+          sensor.detectedPos = targetPos;
+          sensor.detectedShipId = targetName;
+        }
+        else {
+          sensor.detectedPos = undefined;
+          sensor.detectedShipId = "";
+        }
         entity.components.set(CShipSensor.id, sensor);
     }
   }

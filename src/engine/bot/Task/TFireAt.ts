@@ -36,7 +36,7 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number;}> 
             return new CActionFire(new Vect2D(pos.value.x, pos.value.y), heading);
         }
 
-        // One time action
+        // One time action (for now)
         this.state = IAActionState.DONE;
 
         return undefined;
