@@ -12,6 +12,7 @@ import { MissileResources } from '../../resources/RMissile';
 import { IComponent } from '../IComponent';
 import { CRenderer } from '../components/CRenderer';
 import { CCanvas } from '../components/CCanvas';
+import { CLife } from '../components/CLife';
 
 export class SFire implements ISystem {
     public id = 'Fire';
@@ -32,25 +33,23 @@ export class SFire implements ISystem {
         for (let entity of entities) {
             const fire = entity.components.get(CActionFire.id) as CActionFire;
 
-            this.addMissile(fire.origin, fire.heading, ecs, canvas.components.get(CCanvas.id) as CCanvas);
+            this.addMissile(fire.origin, fire.angle, ecs, canvas.components.get(CCanvas.id) as CCanvas);
             ecs.removeComponentOnEntity(entity, fire);
         }
     }
 
-    private addMissile(origin: Vect2D, heading: Vect2D, ecs: ECSManager, canvas: CCanvas) {
+    private addMissile(origin: Vect2D, angle: number, ecs: ECSManager, canvas: CCanvas) {
         const speed = 10;
 
         let components = new Map<string, IComponent>();
         components.set(CMissile.id, new CMissile());
-        components.set(CRigidBody.id, new CRigidBody(20));
+        components.set(CRigidBody.id, new CRigidBody(5));
         components.set(CSpeed.id, new CSpeed(speed));
         components.set(CPosition.id, new CPosition(origin));
-
-        const uVector = new Vect2D(1, 0);
-        const angle = uVector.angleWithVector(heading);
         components.set(COrientation.id, new COrientation(angle));
+        components.set(CLife.id, new CLife(60));
 
-        const velocity = new Vect2D(heading.x * speed, heading.y * speed);
+        const velocity = new Vect2D(0, 0);
         components.set(CVelocity.id, new CVelocity(velocity));
         components.set(CRenderer.id, new CRenderer({
             width: 20,

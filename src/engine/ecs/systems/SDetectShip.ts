@@ -15,27 +15,27 @@ export class SDetectShip implements ISystem {
 
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShipSensor.id, CPosition.id, CDomain.id]);
-    const ships = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
+    const targetShips = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
 
-    for (let entity of entities) {
-        const entityPos =  entity.components.get(CPosition.id) as CPosition;
+    for (let ship of entities) {
+        const entityPos =  ship.components.get(CPosition.id) as CPosition;
         let minDistance = Infinity;
         let targetPos = undefined;
         let targetName = "";
 
-        for (let ship of ships) {
-            if (ship.name !== entity.name) {
-                const shipPos =  ship.components.get(CPosition.id) as CPosition;
-                const distance = shipPos.value.distance2(entityPos.value);
+        for (let targetShip of targetShips) {
+            if (targetShip.name !== ship.name) {
+                const targetShipPos =  targetShip.components.get(CPosition.id) as CPosition;
+                const distance = targetShipPos.value.distance2(entityPos.value);
                 if (distance < minDistance) {
-                    targetPos = shipPos.value;
-                    targetName = ship.name;
+                    targetPos = targetShipPos.value;
+                    targetName = targetShip.name;
                 }
             }
         }
 
-        let sensor = entity.components.get(CShipSensor.id) as CShipSensor;
-        if (ships.length > 0) {
+        let sensor = ship.components.get(CShipSensor.id) as CShipSensor;
+        if (targetPos !== undefined) {
           sensor.detectedPos = targetPos;
           sensor.detectedShipId = targetName;
         }
@@ -43,7 +43,7 @@ export class SDetectShip implements ISystem {
           sensor.detectedPos = undefined;
           sensor.detectedShipId = "";
         }
-        entity.components.set(CShipSensor.id, sensor);
+        ship.components.set(CShipSensor.id, sensor);
     }
   }
 }

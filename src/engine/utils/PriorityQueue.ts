@@ -16,10 +16,14 @@ export class PriorityQueue<T> {
 
     public pop(): T | undefined {
         const node = this.bt.popMin();
-        return node === undefined ? node : node.object;
+        return node === undefined ? undefined : node.object;
     }
 
     public empty(): boolean {
         return this.bt.empty();
+    }
+
+    public size(): number {
+        return this.bt.getBT().size;
     }
 }

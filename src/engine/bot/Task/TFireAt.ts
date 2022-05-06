@@ -1,4 +1,5 @@
 import { CActionFire } from "../../ecs/components/CActionFire";
+import { COrientation } from "../../ecs/components/COrientation";
 import { CPosition } from "../../ecs/components/CPosition";
 import { CShipSensor } from "../../ecs/components/CShipSensor";
 import { IComponent } from "../../ecs/IComponent";
@@ -24,16 +25,12 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number;}> 
     }
 
     public operate(agent: IEntity): IComponent | undefined {
+        debugger;
         const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
         if (shipSensor && shipSensor.detectedPos) {
-            const target = shipSensor.detectedPos;
             const pos = agent.components.get(CPosition.id) as CPosition;
-
-            const heading = Vect2D.sub(target, pos.value);
-            heading.normalize();
-            //console.log("From: " + pos.value.key() + ", To: " + target.key() + ", " + heading.key());
-
-            return new CActionFire(new Vect2D(pos.value.x, pos.value.y), heading);
+            const orientation = agent.components.get(COrientation.id) as COrientation;
+            return new CActionFire(new Vect2D(pos.value.x, pos.value.y), orientation.angle);
         }
 
         // One time action (for now)

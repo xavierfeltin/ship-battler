@@ -1,18 +1,17 @@
 import { ISystem } from '../ISystem';
 import { ECSManager } from '../ECSManager';
-import { COrientation } from '../components/COrientation';
-import { Vect2D } from '../../utils/Vect2D';
-import { CPosition } from '../components/CPosition';
-import { IComponent } from '../IComponent';
 import { CCanvas } from '../components/CCanvas';
 import { CActionMine } from '../components/CActionMine';
 import { IEntity } from '../IEntity';
 import { CLife } from '../components/CLife';
-import { CTarget } from '../components/CTarget';
 import { CMiningBeam } from '../components/CMiningBeam';
 import { CSpeed } from '../components/CSpeed';
-import { CRenderer } from '../components/CRenderer';
 
+export interface MinedAsteroid {
+    asteroidId: string;
+    asteroid: IEntity;
+    miningShips: IEntity[];
+}
 export class SMine implements ISystem {
     public id = 'Mine';
     public priority: number;
@@ -29,11 +28,39 @@ export class SMine implements ISystem {
             return;
         }
 
+        // Register which asteroids are updated
+        const minedAsteroids: MinedAsteroid[] = [];
         for (let ship of entities) {
             const mine = ship.components.get(CActionMine.id) as CActionMine;
             const asteroid =  ecs.selectEntityFromId(mine.asteroidId);
             if (asteroid !== undefined) {
-                const isAsteroidBeingMined = this.mineAsteroid(asteroid, ecs);
+                const minedAsteroid: MinedAsteroid | undefined = minedAsteroids.find((a: MinedAsteroid) => {
+                    return a.asteroidId === mine.asteroidId;
+                });
+
+                if (minedAsteroid === undefined) {
+                    minedAsteroids.push({
+                        asteroidId: mine.asteroidId,
+                        asteroid: asteroid,
+                        miningShips: [ship]
+                    });
+                }
+                else {
+                    minedAsteroid.miningShips.push(ship);
+                }
+            }
+        }
+
+        for (let minedAsteroid of minedAsteroids) {
+            // Update the life of the mined asteroid in one go
+            const isAsteroidBeingMined = this.mineAsteroid(minedAsteroid.asteroid, minedAsteroid.miningShips.length, ecs)
+            if (!isAsteroidBeingMined) {
+                ecs.removeEntity(minedAsteroid.asteroid.name);
+            }
+
+            // Update the associated ships depending of the resulting asteroid state
+            for (let ship of minedAsteroid.miningShips) {
+                const mine = ship.components.get(CActionMine.id) as CActionMine;
                 if (isAsteroidBeingMined) {
                     this.stopShipForMining(ship, ecs);
                     this.addMiningBeam(ship, mine, ecs, canvas.components.get(CCanvas.id) as CCanvas);
@@ -43,7 +70,6 @@ export class SMine implements ISystem {
                     ecs.removeComponentOnEntity(ship, mine);
                     const miningBeam = ship.components.get(CMiningBeam.id) as CMiningBeam;
                     ecs.removeComponentOnEntity(ship, miningBeam);
-                    ecs.removeEntity(asteroid.name);
                 }
             }
         }
@@ -61,10 +87,10 @@ export class SMine implements ISystem {
         ecs.addOrUpdateComponentOnEntity(ship, speed);
     }
 
-    private mineAsteroid(asteroid: IEntity, ecs: ECSManager): boolean {
+    private mineAsteroid(asteroid: IEntity, nbMiningShips: number, ecs: ECSManager): boolean {
         let life: CLife = asteroid.components.get(CLife.id) as CLife;
         if (life !== undefined) {
-            life.value = life.value - 1;
+            life.value = life.value - nbMiningShips;
             ecs.addOrUpdateComponentOnEntity(asteroid, life);
             const isAsteroidBeingMined = life.value > 0;
             return isAsteroidBeingMined;
@@ -80,22 +106,5 @@ export class SMine implements ISystem {
 
         let miningBeam: CMiningBeam = new CMiningBeam(target, heading);
         ecs.addOrUpdateComponentOnEntity(ship, miningBeam);
-
-        /*
-        let components = new Map<string, IComponent>();
-        components.set(CMiningBeam.id, new CMiningBeam());
-        components.set(CPosition.id, new CPosition(origin));
-        components.set(CTarget.id, new CTarget(target));
-
-        const uVector = new Vect2D(1, 0);
-        const angle = uVector.angleWithVector(heading);
-        components.set(COrientation.id, new COrientation(angle));
-
-        components.set(CRenderer.id, new CRenderer({
-            ctx: canvas.ctx
-        }));
-
-        ecs.addEntity(components);
-        */
     }
 }

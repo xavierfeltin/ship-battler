@@ -13,6 +13,14 @@ export class CActionFire implements IComponent {
         this._origin = value;
     }
 
+    private _angle: number;
+  public get angle(): number {
+    return this._angle;
+  }
+  public set angle(value: number) {
+    this._angle = value;
+  }
+    /*
   private _heading: Vect2D;
     public get heading(): Vect2D {
         return this._heading;
@@ -20,8 +28,10 @@ export class CActionFire implements IComponent {
     public set heading(heading: Vect2D) {
         this._heading = heading;
     }
-  constructor(origin: Vect2D, heading: Vect2D) {
+    */
+  constructor(origin: Vect2D, angle: number) {
     this._origin = origin;
-    this._heading = heading;
+    //this._heading = heading;
+    this._angle = angle;
   }
 }

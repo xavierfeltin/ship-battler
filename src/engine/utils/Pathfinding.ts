@@ -29,6 +29,7 @@ export class PathFinding {
 
             // Found our target \o/ !
             if (current !== undefined && current.eq(targetWaypoint)) {
+                console.warn("[aStarSearch] Target " + targetWaypoint + " found");
                 break;
             }
 

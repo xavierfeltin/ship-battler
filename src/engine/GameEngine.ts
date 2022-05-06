@@ -36,11 +36,16 @@ import { SRenderMiningBeam } from "./ecs/systems/SRenderMiningBeam";
 import { SMine } from "./ecs/systems/SMine";
 import { SDetectAsteroid } from "./ecs/systems/SDetectAsteroid";
 import { CAsteroidSensor } from "./ecs/components/CAsteroidSensor";
+import { CMissile } from "./ecs/components/CMissile";
 
 export interface ShipConfiguration {
     position: Vect2D;
     speed: number;
     hasShipSensor: boolean;
+}
+
+export interface AsteroidConfiguration {
+    position: Vect2D;
 }
 
 export class GameEngine {
@@ -65,15 +70,26 @@ export class GameEngine {
             speed: 5
         });
 
-        /*
+
         this.addShip({
             position: new Vect2D(500, 500),
             hasShipSensor: false,
             speed: 6
         });
-        */
 
-        this.addAsteroid();
+        /*
+        this.addAsteroid({
+            position: new Vect2D(400, 600)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(700, 320)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(100, 100)
+        });
+        */
 
         this.addBot();
         this.addPhysics();
@@ -102,6 +118,23 @@ export class GameEngine {
             entity.components.delete(CMap.name);
             entity.components.delete(COrientation.name);
         });
+
+        // Clean actions for ships that need to be removed from one update to another
+        const ships = this.ecs.selectEntitiesFromComponents([CShip.id, CActionTurn.id, CMap.id, COrientation.id]);
+        for (let ship of ships) {
+            ship.components.delete(CActionTurn.name);
+            ship.components.delete(CMap.name);
+            ship.components.delete(COrientation.name);
+        }
+
+        // Remove missiles which are no longer active
+        const missiles = this.ecs.selectEntitiesFromComponents([CMissile.id, CLife.id]);
+        for (let missile of missiles) {
+            const life = missile.components.get(CLife.id) as CLife;
+            if (life !== undefined && life.value === 0) {
+                this.ecs.removeEntity(missile.name);
+            }
+        }
     }
 
     private addArea() {
@@ -151,11 +184,11 @@ export class GameEngine {
         this.ecs.addEntity(components);
     }
 
-    private addAsteroid() {
+    private addAsteroid(config: AsteroidConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CAsteroid.id, new CAsteroid());
         components.set(CRigidBody.id, new CRigidBody(20));
-        components.set(CPosition.id, new CPosition(new Vect2D(400, 600)));
+        components.set(CPosition.id, new CPosition(config.position));
         components.set(CLife.id, new CLife(100));
         components.set(CRenderer.id, new CRenderer({
             width: 40,
