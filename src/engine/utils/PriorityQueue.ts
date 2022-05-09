@@ -1,29 +1,29 @@
-import { BinaryTree } from "./BinaryTree";
+import { BinaryMinHeap } from "./BinaryMinHeap";
 
 export class PriorityQueue<T> {
-    private bt: BinaryTree<T>;
+    private bh: BinaryMinHeap<T>;
 
     public constructor() {
-        this.bt = new BinaryTree();
+        this.bh = new BinaryMinHeap<T>();
     }
 
-    public push(priority: number, object: any) {
-        this.bt.addNode({
-            value: priority,
+    public push(priority: number, object: T) {
+        this.bh.push({
+            priority: priority,
             object: object
         });
     }
 
     public pop(): T | undefined {
-        const node = this.bt.popMin();
+        const node = this.bh.pop();
         return node === undefined ? undefined : node.object;
     }
 
     public empty(): boolean {
-        return this.bt.empty();
+        return this.bh.isEmpty();
     }
 
-    public size(): number {
-        return this.bt.getBT().size;
+    public length(): number {
+        return this.bh.length();
     }
 }
