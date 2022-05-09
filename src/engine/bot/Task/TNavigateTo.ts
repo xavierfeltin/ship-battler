@@ -64,7 +64,6 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
 
         const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
         const orientation = agent.components.get(COrientation.id) as COrientation;
-        const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
 
         this.from = fromPosition.value;
         if (this.nextPoint === undefined || this.from.distance(this.nextPoint) <= this.stopAtDistance) {
@@ -120,14 +119,14 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                 break;
             default:
                 // Define a random new target (see how to do something smarter)
-                let destX = Math.floor(Math.random() * 1200);
-                let destY = Math.floor(Math.random() * 800);
-                this.to = new Vect2D(destX, destY);
-                console.log("Go to random place " + destX + " - " + destY);
-
                 const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
                 if (rigidBody !== undefined) {
                     this.stopAtDistance = rigidBody.radius;
+
+                    let destX = Math.floor(Math.random() * (1200 - rigidBody.radius));
+                    let destY = Math.floor(Math.random() * (800 - rigidBody.radius));
+                    this.to = new Vect2D(destX, destY);
+                    console.log("Go to random place " + destX + " - " + destY);
                 }
         }
 

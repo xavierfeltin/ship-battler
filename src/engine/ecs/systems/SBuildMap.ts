@@ -20,7 +20,7 @@ export class SBuildMap implements ISystem {
 
     const width = area.attr.width || 0;
     const height = area.attr.height || 0;
-    const granularity = 20;
+    const granularity = 20; // same as rigid body of a ship
 
     for (let entity of entities) {
         let map = this.buildMap(entity, entities, width, height, granularity);

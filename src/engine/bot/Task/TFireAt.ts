@@ -25,7 +25,6 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number;}> 
     }
 
     public operate(agent: IEntity): IComponent | undefined {
-        debugger;
         const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
         if (shipSensor && shipSensor.detectedPos) {
             const pos = agent.components.get(CPosition.id) as CPosition;

@@ -29,7 +29,7 @@ export class PathFinding {
 
             // Found our target \o/ !
             if (current !== undefined && current.eq(targetWaypoint)) {
-                console.warn("[aStarSearch] Target " + targetWaypoint + " found");
+                console.warn("[aStarSearch] Target " + targetWaypoint.key() + " found");
                 break;
             }
 
@@ -53,6 +53,10 @@ export class PathFinding {
             })
         }
 
+        if (toVisit.empty() && !cameFrom.has(targetWaypoint.key())) {
+            console.warn("[aStarSearch] The target " + targetWaypoint.key() + " could not be found ...");
+        }
+
         return {
             cameFrom: cameFrom,
             costSoFar: costSoFar
@@ -67,7 +71,7 @@ export class PathFinding {
         const path: Vect2D[] = [];
         const startKey = startWaypoint.key();
 
-        while (current.key() !== startKey) {
+        while (current !== undefined && current.key() !== startKey) {
             path.push(current);
             const cur = cameFrom.get(current.key());
             if (cur !== undefined) {
@@ -75,6 +79,7 @@ export class PathFinding {
             }
             else {
                 console.warn("A step in the path being reconstructed is undefined. The path may not be fully correct.");
+                debugger;
             }
         }
         path.push(startWaypoint);
