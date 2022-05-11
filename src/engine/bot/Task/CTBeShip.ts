@@ -5,7 +5,7 @@ import { CTAttackEnnemy } from "./CTAttackEnnemy";
 import { WorldState } from "../WorldState";
 import { CTMineAsteroid } from "./CTMineAsteroid";
 
-export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; isMining: number;}> extends CompoundTask<T> {
+export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; isMining: number; isReadyToFire: number}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];

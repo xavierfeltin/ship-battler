@@ -9,7 +9,7 @@ import { IAActionState } from "../IAIAction";
 import { WorldState } from "../WorldState";
 import { Task } from "./Task";
 
-export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number;}> extends Task<T> {
+export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number; isReadyToFire: number;}> extends Task<T> {
     public constructor(indexes: T) {
         super(indexes);
     }
@@ -17,10 +17,12 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number;}> 
     public canBeRun(worldState: WorldState): boolean {
         const hasEnnemyToAttack = worldState.getState(this.indexes.hasEnnemyToAttack) === 1
         const isInRange = worldState.getState(this.indexes.isInRange) === 1;
-        return hasEnnemyToAttack && isInRange;
+        const isReady = worldState.getState(this.indexes.isReadyToFire) === 1;
+        return hasEnnemyToAttack && isInRange && isReady;
     }
 
     public applyEffects(worldState: WorldState): WorldState {
+        worldState.changeState(this.indexes.isReadyToFire, 0); // cannon goes into cool down
         return worldState;
     }
 

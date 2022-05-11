@@ -123,8 +123,10 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                 if (rigidBody !== undefined) {
                     this.stopAtDistance = rigidBody.radius;
 
-                    let destX = Math.floor(Math.random() * (1200 - rigidBody.radius));
-                    let destY = Math.floor(Math.random() * (800 - rigidBody.radius));
+                    let destX = Math.floor(Math.random() * 1200);
+                    let destY = Math.floor(Math.random() * 800);
+                    destX = Math.max(rigidBody.radius, Math.min(destX, 1200 - rigidBody.radius));
+                    destY = Math.max(rigidBody.radius, Math.min(destY, 800 - rigidBody.radius));
                     this.to = new Vect2D(destX, destY);
                     console.log("Go to random place " + destX + " - " + destY);
                 }

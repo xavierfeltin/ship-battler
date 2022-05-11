@@ -7,6 +7,7 @@ import { CDomain } from '../components/CDomain';
 import { IEntity } from '../IEntity';
 import { CAsteroidSensor } from '../components/CAsteroidSensor';
 import { CActionMine } from '../components/CActionMine';
+import { CCannon } from '../components/CCannon';
 
 export class SBuildShipDomain implements ISystem {
   public id = 'BuildShipDomain';
@@ -19,7 +20,7 @@ export class SBuildShipDomain implements ISystem {
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
     for (let ship of entities) {
-        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4}>;
+        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5}>;
         this.updateAttackInformation(ship, cDomain);
         this.updateMiningInformation(ship, cDomain);
 
@@ -27,7 +28,7 @@ export class SBuildShipDomain implements ISystem {
     }
   }
 
-  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2}>): void {
+  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, isReadyToFire: 5}>): void {
     let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
     if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
         let pos = ship.components.get(CPosition.id) as CPosition;
@@ -38,6 +39,12 @@ export class SBuildShipDomain implements ISystem {
     else {
         domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
         domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 0);
+    }
+
+    const cannon = ship.components.get(CCannon.id) as CCannon;
+    if (cannon !== undefined) {
+      const isCannonCanFire: number = cannon.isOperational() ? 1 : 0;
+      domain.domain.updateWorldState(domain.domain.indexes.isReadyToFire, isCannonCanFire);
     }
   }
 

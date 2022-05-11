@@ -5,13 +5,15 @@ import { ISystem } from "./ISystem";
 export enum ESystems {
     BOT,
     PHYSICS,
-    RENDERERS
+    RENDERERS,
+    POSTPROCESSING
 }
 export class ECSManager {
     private entities: Map<string, IEntity>;
     private botSystems: Map<string, ISystem>;
     private physicsSystems: Map<string, ISystem>;
     private renderersSystems: Map<string, ISystem>;
+    private postProcessingSystems: Map<string, ISystem>;
 
     private lastId: number;
 
@@ -20,6 +22,7 @@ export class ECSManager {
         this.botSystems = new Map();
         this.physicsSystems = new Map();
         this.renderersSystems = new Map();
+        this.postProcessingSystems = new Map();
         this.lastId = 0;
     }
 
@@ -66,6 +69,9 @@ export class ECSManager {
             case ESystems.RENDERERS:
                 this.renderersSystems.set(name, system);
                 break;
+            case ESystems.POSTPROCESSING:
+                this.postProcessingSystems.set(name, system);
+                break;
             default:
                 break;
         }
@@ -82,6 +88,9 @@ export class ECSManager {
                 break;
             case ESystems.RENDERERS:
                 this.renderersSystems.delete(name);
+                break;
+            case ESystems.POSTPROCESSING:
+                this.postProcessingSystems.delete(name);
                 break;
             default:
                 break;
@@ -101,6 +110,8 @@ export class ECSManager {
                 return Array.from(this.physicsSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
             case ESystems.RENDERERS:
                 return Array.from(this.renderersSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+            case ESystems.POSTPROCESSING:
+                return Array.from(this.postProcessingSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
             default:
                 return [];
         }

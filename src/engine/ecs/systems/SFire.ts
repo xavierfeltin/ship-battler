@@ -13,6 +13,7 @@ import { IComponent } from '../IComponent';
 import { CRenderer } from '../components/CRenderer';
 import { CCanvas } from '../components/CCanvas';
 import { CLife } from '../components/CLife';
+import { CCannon } from '../components/CCannon';
 
 export class SFire implements ISystem {
     public id = 'Fire';
@@ -23,7 +24,7 @@ export class SFire implements ISystem {
     }
 
     onUpdate(ecs: ECSManager): void {
-        const entities = ecs.selectEntitiesFromComponents([CActionFire.id]);
+        const entities = ecs.selectEntitiesFromComponents([CActionFire.id, CCannon.id]);
         const canvas = ecs.selectEntityFromId('Canvas');
 
         if (!canvas) {
@@ -32,9 +33,12 @@ export class SFire implements ISystem {
 
         for (let entity of entities) {
             const fire = entity.components.get(CActionFire.id) as CActionFire;
-
             this.addMissile(fire.origin, fire.angle, ecs, canvas.components.get(CCanvas.id) as CCanvas);
             ecs.removeComponentOnEntity(entity, fire);
+
+            const cannon = entity.components.get(CCannon.id) as CCannon;
+            cannon.fire();
+            ecs.addOrUpdateComponentOnEntity(entity, cannon);
         }
     }
 

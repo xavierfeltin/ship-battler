@@ -37,6 +37,9 @@ import { SMine } from "./ecs/systems/SMine";
 import { SDetectAsteroid } from "./ecs/systems/SDetectAsteroid";
 import { CAsteroidSensor } from "./ecs/components/CAsteroidSensor";
 import { CMissile } from "./ecs/components/CMissile";
+import { CCannon } from "./ecs/components/CCannon";
+import { SFinalizeShip } from "./ecs/systems/SFinalizeShip";
+import { SFinalizeMissile } from "./ecs/systems/SFinalizeMissile";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -51,12 +54,12 @@ export interface AsteroidConfiguration {
 export class GameEngine {
     private ecs: ECSManager;
     private ctx: CanvasRenderingContext2D;
-    private cacheSystemsByPriority: {bots: ISystem[], physics: ISystem[], renderers: ISystem[]};
+    private cacheSystemsByPriority: {bots: ISystem[], physics: ISystem[], renderers: ISystem[], postprocessing: ISystem[]};
 
     public constructor(canvas: CanvasRenderingContext2D) {
         this.ecs = new ECSManager();
         this.ctx = canvas;
-        this.cacheSystemsByPriority = {bots: [], physics: [], renderers: []};
+        this.cacheSystemsByPriority = {bots: [], physics: [], renderers: [], postprocessing: []};
     }
 
     public init() {
@@ -94,9 +97,11 @@ export class GameEngine {
         this.addBot();
         this.addPhysics();
         this.addRendering();
+        this.addPostProcessing();
         this.cacheSystemsByPriority.bots = this.ecs.getSystemListByPriority(ESystems.BOT);
         this.cacheSystemsByPriority.physics = this.ecs.getSystemListByPriority(ESystems.PHYSICS);
         this.cacheSystemsByPriority.renderers = this.ecs.getSystemListByPriority(ESystems.RENDERERS);
+        this.cacheSystemsByPriority.postprocessing = this.ecs.getSystemListByPriority(ESystems.POSTPROCESSING);
     }
 
     public update() {
@@ -112,29 +117,9 @@ export class GameEngine {
             system.onUpdate(this.ecs);
         });
 
-        // Clean actions that need to be removed from one update to another
-        this.ecs.selectEntitiesFromComponents([]).forEach((entity) => {
-            entity.components.delete(CActionTurn.name);
-            entity.components.delete(CMap.name);
-            entity.components.delete(COrientation.name);
+        this.cacheSystemsByPriority.postprocessing.forEach(system => {
+            system.onUpdate(this.ecs);
         });
-
-        // Clean actions for ships that need to be removed from one update to another
-        const ships = this.ecs.selectEntitiesFromComponents([CShip.id, CActionTurn.id, CMap.id, COrientation.id]);
-        for (let ship of ships) {
-            ship.components.delete(CActionTurn.name);
-            ship.components.delete(CMap.name);
-            ship.components.delete(COrientation.name);
-        }
-
-        // Remove missiles which are no longer active
-        const missiles = this.ecs.selectEntitiesFromComponents([CMissile.id, CLife.id]);
-        for (let missile of missiles) {
-            const life = missile.components.get(CLife.id) as CLife;
-            if (life !== undefined && life.value === 0) {
-                this.ecs.removeEntity(missile.name);
-            }
-        }
     }
 
     private addArea() {
@@ -163,8 +148,8 @@ export class GameEngine {
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip(100, 400));
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4})));
-        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2}>());
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5})));
+        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2, isReadyToFire: 5}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));
@@ -174,6 +159,7 @@ export class GameEngine {
         if (config.hasShipSensor)
         {
             components.set(CShipSensor.id, new CShipSensor());
+            components.set(CCannon.id, new CCannon(30));
         }
         components.set(CRenderer.id, new CRenderer({
             width: 40,
@@ -220,5 +206,10 @@ export class GameEngine {
         this.ecs.addSystem("RenderMissile", new SRenderMissile(2), ESystems.RENDERERS);
         this.ecs.addSystem("RenderMiningBeam", new SRenderMiningBeam(3), ESystems.RENDERERS);
         this.ecs.addSystem("RenderAsteroid", new SRenderAsteroid(4), ESystems.RENDERERS);
+    }
+
+    private addPostProcessing() {
+        this.ecs.addSystem("FinalizeShip", new SFinalizeShip(0), ESystems.POSTPROCESSING);
+        this.ecs.addSystem("FinalizeMissile", new SFinalizeMissile(1), ESystems.POSTPROCESSING);
     }
 }
