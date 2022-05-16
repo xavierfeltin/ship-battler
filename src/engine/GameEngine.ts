@@ -41,22 +41,35 @@ import { SDamage } from "./ecs/systems/SDamage";
 import { SFinalizeFrame } from "./ecs/systems/SFinalizeFrame";
 import { SFinalizePhysicsUpdate } from "./ecs/systems/SFinalizePhysicsUpdate";
 
-export interface ShipConfiguration {
-    position: Vect2D;
-    speed: number;
-    hasShipSensor: boolean;
-}
-
-export interface AsteroidConfiguration {
-    position: Vect2D;
-}
-
 export enum GameEnityUniqId {
     Collisions = "collisions",
     PreviousCollisions = "previousCollisions",
     TimeFrame = "timeFrame",
     Area = "area",
     Canvas = "canvas"
+}
+
+export enum Team {
+    TeamA,
+    TeamB
+}
+
+export enum ShipRole {
+    Mining = "Mining",
+    Hunting = "Hunting",
+    Blocking = "Blocking"
+}
+
+export interface ShipConfiguration {
+    position: Vect2D;
+    speed: number;
+    hasShipSensor: boolean;
+    team: Team;
+    role: ShipRole;
+}
+
+export interface AsteroidConfiguration {
+    position: Vect2D;
 }
 
 export class GameEngine {
@@ -79,14 +92,18 @@ export class GameEngine {
         this.addShip({
             position: new Vect2D(200, 200),
             hasShipSensor: true,
-            speed: 5
+            speed: 5,
+            team: Team.TeamA,
+            role: ShipRole.Hunting
         });
 
 
         this.addShip({
             position: new Vect2D(500, 500),
             hasShipSensor: false,
-            speed: 6
+            speed: 6,
+            team: Team.TeamB,
+            role: ShipRole.Mining
         });
 
         /*
@@ -138,18 +155,6 @@ export class GameEngine {
         let timeFrame = entityTimeFrame.components.get(CTimeFrame.id) as CTimeFrame;
         timeFrame.time = 0;
         this.ecs.addOrUpdateComponentOnEntity(entityTimeFrame, timeFrame);
-
-        /*
-        // Reset collision history for the new frame
-        const entityPreviousCollision = this.ecs.selectEntityFromId(GameEnityUniqId.PreviousCollisions);
-        if (entityPreviousCollision === undefined) {
-            console.error("[updatePhysicSystems] Time previous collisions has not been defined");
-            return;
-        }
-        const prevCollision = entityPreviousCollision.components.get('Collisions') as CCollisions;
-        prevCollision.collisions = [];
-        this.ecs.addOrUpdateComponentOnEntity(entityPreviousCollision, prevCollision);
-        */
 
         let t = timeFrame.time;
         let nbSameCollisionTimeDetected = 0;
@@ -227,9 +232,10 @@ export class GameEngine {
             components.set(CCannon.id, new CCannon(15));
         }
         components.set(CRenderer.id, new CRenderer({
-            width: 40,
-            height: 40,
-            sprite: ShipResources.GetSpriteBase64(),
+            width: 80,
+            height: 80,
+            sprite: ShipResources.GetSpriteBase64(config.team, config.role),
+            spriteRotation: ShipResources.GetSpriteRotation(),
             ctx: this.ctx
         }));
         this.ecs.addEntity(components);

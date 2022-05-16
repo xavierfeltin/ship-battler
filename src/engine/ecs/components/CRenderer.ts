@@ -5,6 +5,7 @@ export interface IRenderAttributes {
     width?: number;
     height?: number;
     sprite?: string;
+    spriteRotation?: number; //In degree
     ctx: CanvasRenderingContext2D
 }
 

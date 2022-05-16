@@ -42,7 +42,12 @@ export class SRenderShip implements ISystem {
 
     // go to center for rotation
     ctx.translate(transX, transY);
-    ctx.rotate(angle * Math.PI / 180); // convert from degree to radian and rotate
+
+    let totalRotationAngleInDegree = angle;
+    if (renderer.attr.spriteRotation) {
+      totalRotationAngleInDegree += renderer.attr.spriteRotation
+    }
+    ctx.rotate(totalRotationAngleInDegree * Math.PI / 180); // convert from degree to radian and rotate
     ctx.drawImage(sprite, -transX, -transY, w, h); // draws the sprite
 
     ctx.restore(); // restore original states (no rotation etc)
