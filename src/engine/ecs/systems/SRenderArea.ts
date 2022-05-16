@@ -1,6 +1,7 @@
 import { ISystem } from '../ISystem';
 import { ECSManager } from '../ECSManager';
 import { CRenderer } from '../components/CRenderer';
+import { GameEnityUniqId } from '../../GameEngine';
 
 export class SRenderArea implements ISystem {
   public id = 'RenderArea';
@@ -11,7 +12,7 @@ export class SRenderArea implements ISystem {
 }
 
   onUpdate(ecs: ECSManager): void {
-    const renderer = ecs.selectEntityFromId('Area')?.components.get(CRenderer.id) as CRenderer;
+    const renderer = ecs.selectEntityFromId(GameEnityUniqId.Area)?.components.get(CRenderer.id) as CRenderer;
 
     const x = 0;
     const y = 0;

@@ -10,6 +10,7 @@ import { CShip } from '../components/CShip';
 import { IEntity } from '../IEntity';
 import { CMissile } from '../components/CMissile';
 import { CLife } from '../components/CLife';
+import { GameEnityUniqId } from '../../GameEngine';
 
 export class SMove implements ISystem {
   public id = 'Move';
@@ -20,7 +21,7 @@ export class SMove implements ISystem {
   }
 
   onUpdate(ecs: ECSManager): void {
-    const timeFrame = ecs.selectEntityFromId('TimeFrame')?.components.get(CTimeFrame.id) as CTimeFrame;
+    const timeFrame = ecs.selectEntityFromId(GameEnityUniqId.TimeFrame)?.components.get(CTimeFrame.id) as CTimeFrame;
     const time = timeFrame.time;
 
     const ships = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id, COrientation.id, CSpeed.id, CVelocity.id]);

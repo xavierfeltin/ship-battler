@@ -31,7 +31,7 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number; is
         if (shipSensor && shipSensor.detectedPos) {
             const pos = agent.components.get(CPosition.id) as CPosition;
             const orientation = agent.components.get(COrientation.id) as COrientation;
-            return new CActionFire(new Vect2D(pos.value.x, pos.value.y), orientation.angle);
+            return new CActionFire(agent.name, new Vect2D(pos.value.x, pos.value.y), orientation.angle);
         }
 
         // One time action (for now)

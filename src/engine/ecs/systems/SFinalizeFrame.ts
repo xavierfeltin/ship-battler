@@ -1,14 +1,15 @@
 import { ISystem } from '../ISystem';
 import { ECSManager } from '../ECSManager';
-import { CShip } from '../components/CShip';
 import { IEntity } from '../IEntity';
-import { CCannon } from '../components/CCannon';
 import { CActionTurn } from '../components/CActionTurn';
 import { CMap } from '../components/CMap';
-import { COrientation } from '../components/COrientation';
+import { CCannon } from '../components/CCannon';
+import { CShip } from '../components/CShip';
+import { GameEnityUniqId } from '../../GameEngine';
+import { CCollisions } from '../components/CCollisions';
 
-export class SFinalizeShip implements ISystem {
-  public id = 'FinalizeShip';
+export class SFinalizeFrame implements ISystem {
+  public id = 'FinalizeFrame';
   public priority: number;
 
     public constructor(priority: number) {
@@ -16,6 +17,11 @@ export class SFinalizeShip implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
+    this.finalizeShips(ecs);
+    this.finalizeCollisions(ecs);
+  }
+
+  private finalizeShips(ecs: ECSManager) {
     const entities = ecs.selectEntitiesFromComponents([CShip.id]);
     for (let ship of entities) {
         this.coolDownCannons(ship, ecs);
@@ -50,5 +56,22 @@ export class SFinalizeShip implements ISystem {
     if (orientation !== undefined)
       ecs.removeComponentOnEntity(ship, orientation);
     */
+  }
+
+  // Reset collision history for the new frame
+  private finalizeCollisions(ecs: ECSManager): void {
+    const previousCollisionsEntity = ecs.selectEntityFromId(GameEnityUniqId.PreviousCollisions);
+    if (previousCollisionsEntity !== undefined) {
+        const previousCollisions = previousCollisionsEntity.components.get('Collisions') as CCollisions;
+        previousCollisions.collisions = [];
+        ecs.addOrUpdateComponentOnEntity(previousCollisionsEntity, previousCollisions);
+    }
+
+    const collisionsEntity = ecs.selectEntityFromId(GameEnityUniqId.Collisions);
+    if (collisionsEntity !== undefined) {
+        const collisions = collisionsEntity.components.get('Collisions') as CCollisions;
+        collisions.collisions = [];
+        ecs.addOrUpdateComponentOnEntity(collisionsEntity, collisions);
+    }
   }
 }

@@ -5,6 +5,7 @@ import { CShip } from '../components/CShip';
 import { CRenderer } from '../components/CRenderer';
 import { IEntity } from '../IEntity';
 import { CPosition } from '../components/CPosition';
+import { GameEnityUniqId } from '../../GameEngine';
 
 export class SBuildMap implements ISystem {
   public id = 'BuildMap';
@@ -16,7 +17,7 @@ export class SBuildMap implements ISystem {
 
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
-    const area = ecs.selectEntityFromId('Area')?.components.get(CRenderer.id) as CRenderer;
+    const area = ecs.selectEntityFromId(GameEnityUniqId.Area)?.components.get(CRenderer.id) as CRenderer;
 
     const width = area.attr.width || 0;
     const height = area.attr.height || 0;

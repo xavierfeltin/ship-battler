@@ -18,8 +18,6 @@ import { CPlanner } from "./ecs/components/CPlanner";
 import { SPlanify } from "./ecs/systems/SPlanify";
 import { SBuildMap } from "./ecs/systems/SBuildMap";
 import { CRigidBody } from "./ecs/components/CRigidBody";
-import { CActionTurn } from "./ecs/components/CActionTurn";
-import { CMap } from "./ecs/components/CMap";
 import { CDomain } from "./ecs/components/CDomain";
 import { ShipDomain } from "./bot/ShipDomain";
 import { CShipSensor } from "./ecs/components/CShipSensor";
@@ -36,10 +34,12 @@ import { SRenderMiningBeam } from "./ecs/systems/SRenderMiningBeam";
 import { SMine } from "./ecs/systems/SMine";
 import { SDetectAsteroid } from "./ecs/systems/SDetectAsteroid";
 import { CAsteroidSensor } from "./ecs/components/CAsteroidSensor";
-import { CMissile } from "./ecs/components/CMissile";
 import { CCannon } from "./ecs/components/CCannon";
-import { SFinalizeShip } from "./ecs/systems/SFinalizeShip";
-import { SFinalizeMissile } from "./ecs/systems/SFinalizeMissile";
+import { SDetectCollisions } from "./ecs/systems/SDetectCollisions";
+import { CCollisions } from "./ecs/components/CCollisions";
+import { SDamage } from "./ecs/systems/SDamage";
+import { SFinalizeFrame } from "./ecs/systems/SFinalizeFrame";
+import { SFinalizePhysicsUpdate } from "./ecs/systems/SFinalizePhysicsUpdate";
 
 export interface ShipConfiguration {
     position: Vect2D;
@@ -49,6 +49,14 @@ export interface ShipConfiguration {
 
 export interface AsteroidConfiguration {
     position: Vect2D;
+}
+
+export enum GameEnityUniqId {
+    Collisions = "collisions",
+    PreviousCollisions = "previousCollisions",
+    TimeFrame = "timeFrame",
+    Area = "area",
+    Canvas = "canvas"
 }
 
 export class GameEngine {
@@ -66,6 +74,7 @@ export class GameEngine {
         this.addCanvas();
         this.addArea();
         this.addTimeFrame();
+        this.addCollisions()
 
         this.addShip({
             position: new Vect2D(200, 200),
@@ -109,9 +118,7 @@ export class GameEngine {
             system.onUpdate(this.ecs);
         });
 
-        this.cacheSystemsByPriority.physics.forEach(system => {
-            system.onUpdate(this.ecs);
-        });
+        this.updatePhysicSystems();
 
         this.cacheSystemsByPriority.renderers.forEach(system => {
             system.onUpdate(this.ecs);
@@ -122,6 +129,53 @@ export class GameEngine {
         });
     }
 
+    private updatePhysicSystems(): void {
+        const entityTimeFrame = this.ecs.selectEntityFromId(GameEnityUniqId.TimeFrame)
+        if (entityTimeFrame === undefined) {
+            console.error("[updatePhysicSystems] Time frame entity has not been defined");
+            return;
+        }
+        let timeFrame = entityTimeFrame.components.get(CTimeFrame.id) as CTimeFrame;
+        timeFrame.time = 0;
+        this.ecs.addOrUpdateComponentOnEntity(entityTimeFrame, timeFrame);
+
+        /*
+        // Reset collision history for the new frame
+        const entityPreviousCollision = this.ecs.selectEntityFromId(GameEnityUniqId.PreviousCollisions);
+        if (entityPreviousCollision === undefined) {
+            console.error("[updatePhysicSystems] Time previous collisions has not been defined");
+            return;
+        }
+        const prevCollision = entityPreviousCollision.components.get('Collisions') as CCollisions;
+        prevCollision.collisions = [];
+        this.ecs.addOrUpdateComponentOnEntity(entityPreviousCollision, prevCollision);
+        */
+
+        let t = timeFrame.time;
+        let nbSameCollisionTimeDetected = 0;
+        while (timeFrame.time < 1.0)
+        {
+            this.cacheSystemsByPriority.physics.forEach(system => {
+                system.onUpdate(this.ecs);
+            });
+
+            // Get time when the next collision occurs
+            timeFrame = this.ecs.selectEntityFromId(GameEnityUniqId.TimeFrame)?.components.get(CTimeFrame.id) as CTimeFrame;
+
+            // Several collisions could happen at the same moment but it it stuck, force to move forward a bit
+            if (timeFrame.time === t) {
+                nbSameCollisionTimeDetected ++;
+                t = timeFrame.time;
+                if (nbSameCollisionTimeDetected > 50) {
+                    console.log('collision engine stuck at t = ' + t + ' ignore collision and force moving forward');
+                    timeFrame.time += 0.01;
+                    t = timeFrame.time;
+                    nbSameCollisionTimeDetected = 0;
+                }
+            }
+        }
+    }
+
     private addArea() {
         let components = new Map<string, IComponent>();
         components.set(CRenderer.id, new CRenderer({
@@ -130,24 +184,35 @@ export class GameEngine {
             color: "black",
             ctx: this.ctx
         }));
-        this.ecs.addUniqEntity('Area', components);
+        this.ecs.addUniqEntity(GameEnityUniqId.Area, components);
     }
 
     private addTimeFrame() {
         let components = new Map<string, IComponent>();
         components.set(CTimeFrame.id, new CTimeFrame());
-        this.ecs.addUniqEntity('TimeFrame', components);
+        this.ecs.addUniqEntity(GameEnityUniqId.TimeFrame, components);
     }
 
     private addCanvas() {
         let components = new Map<string, IComponent>();
         components.set(CCanvas.id, new CCanvas(this.ctx));
-        this.ecs.addUniqEntity('Canvas', components);
+        this.ecs.addUniqEntity(GameEnityUniqId.Canvas, components);
+    }
+
+    private addCollisions() {
+        let components = new Map<string, IComponent>();
+        components.set(CCollisions.id, new CCollisions());
+        this.ecs.addUniqEntity(GameEnityUniqId.Collisions, components);
+
+        components = new Map<string, IComponent>();
+        components.set(CCollisions.id, new CCollisions());
+        this.ecs.addUniqEntity(GameEnityUniqId.PreviousCollisions, components);
     }
 
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip(100, 400));
+        components.set(CLife.id, new CLife(30));
         components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2, isReadyToFire: 5}>());
         components.set(CRigidBody.id, new CRigidBody(20));
@@ -159,7 +224,7 @@ export class GameEngine {
         if (config.hasShipSensor)
         {
             components.set(CShipSensor.id, new CShipSensor());
-            components.set(CCannon.id, new CCannon(30));
+            components.set(CCannon.id, new CCannon(15));
         }
         components.set(CRenderer.id, new CRenderer({
             width: 40,
@@ -194,10 +259,13 @@ export class GameEngine {
     }
 
     private addPhysics() {
-        this.ecs.addSystem("Orientate", new SOrientate(0), ESystems.PHYSICS);
-        this.ecs.addSystem("Move", new SMove(1), ESystems.PHYSICS);
-        this.ecs.addSystem("Mine", new SMine(2), ESystems.BOT);
-        this.ecs.addSystem("Fire", new SFire(3), ESystems.BOT);
+        this.ecs.addSystem("DetectCollisions", new SDetectCollisions(0), ESystems.PHYSICS);
+        this.ecs.addSystem("Damage", new SDamage(1), ESystems.PHYSICS);
+        this.ecs.addSystem("Orientate", new SOrientate(2), ESystems.PHYSICS);
+        this.ecs.addSystem("Move", new SMove(3), ESystems.PHYSICS);
+        this.ecs.addSystem("Mine", new SMine(4), ESystems.PHYSICS);
+        this.ecs.addSystem("Fire", new SFire(5), ESystems.PHYSICS);
+        this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(6), ESystems.PHYSICS);
     }
 
     private addRendering() {
@@ -209,7 +277,6 @@ export class GameEngine {
     }
 
     private addPostProcessing() {
-        this.ecs.addSystem("FinalizeShip", new SFinalizeShip(0), ESystems.POSTPROCESSING);
-        this.ecs.addSystem("FinalizeMissile", new SFinalizeMissile(1), ESystems.POSTPROCESSING);
+        this.ecs.addSystem("FinalizeFrame", new SFinalizeFrame(0), ESystems.POSTPROCESSING);
     }
 }

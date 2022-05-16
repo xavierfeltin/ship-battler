@@ -5,12 +5,20 @@ export class CActionFire implements IComponent {
   public static id: string = "ActionFire";
   public id: string = CActionFire.id;
 
-  private _origin: Vect2D;
-    public get origin(): Vect2D {
-        return this._origin;
+  private _originId: string;
+  public get originId(): string {
+    return this._originId;
+  }
+  public set originId(value: string) {
+    this._originId = value;
+  }
+
+  private _originPos: Vect2D;
+    public get originPos(): Vect2D {
+        return this._originPos;
     }
-    public set origin(value: Vect2D) {
-        this._origin = value;
+    public set originPos(value: Vect2D) {
+        this._originPos = value;
     }
 
     private _angle: number;
@@ -20,18 +28,10 @@ export class CActionFire implements IComponent {
   public set angle(value: number) {
     this._angle = value;
   }
-    /*
-  private _heading: Vect2D;
-    public get heading(): Vect2D {
-        return this._heading;
-    }
-    public set heading(heading: Vect2D) {
-        this._heading = heading;
-    }
-    */
-  constructor(origin: Vect2D, angle: number) {
-    this._origin = origin;
-    //this._heading = heading;
+
+  constructor(originId: string, originPos: Vect2D, angle: number) {
+    this._originId = originId;
+    this._originPos = originPos;
     this._angle = angle;
   }
 }

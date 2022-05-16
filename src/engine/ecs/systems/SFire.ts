@@ -14,6 +14,7 @@ import { CRenderer } from '../components/CRenderer';
 import { CCanvas } from '../components/CCanvas';
 import { CLife } from '../components/CLife';
 import { CCannon } from '../components/CCannon';
+import { GameEnityUniqId } from '../../GameEngine';
 
 export class SFire implements ISystem {
     public id = 'Fire';
@@ -25,7 +26,7 @@ export class SFire implements ISystem {
 
     onUpdate(ecs: ECSManager): void {
         const entities = ecs.selectEntitiesFromComponents([CActionFire.id, CCannon.id]);
-        const canvas = ecs.selectEntityFromId('Canvas');
+        const canvas = ecs.selectEntityFromId(GameEnityUniqId.Canvas);
 
         if (!canvas) {
             return;
@@ -33,7 +34,7 @@ export class SFire implements ISystem {
 
         for (let entity of entities) {
             const fire = entity.components.get(CActionFire.id) as CActionFire;
-            this.addMissile(fire.origin, fire.angle, ecs, canvas.components.get(CCanvas.id) as CCanvas);
+            this.addMissile(fire, ecs, canvas.components.get(CCanvas.id) as CCanvas);
             ecs.removeComponentOnEntity(entity, fire);
 
             const cannon = entity.components.get(CCannon.id) as CCannon;
@@ -42,15 +43,15 @@ export class SFire implements ISystem {
         }
     }
 
-    private addMissile(origin: Vect2D, angle: number, ecs: ECSManager, canvas: CCanvas) {
+    private addMissile(action: CActionFire, ecs: ECSManager, canvas: CCanvas) {
         const speed = 10;
 
         let components = new Map<string, IComponent>();
-        components.set(CMissile.id, new CMissile());
+        components.set(CMissile.id, new CMissile(action.originId));
         components.set(CRigidBody.id, new CRigidBody(5));
         components.set(CSpeed.id, new CSpeed(speed));
-        components.set(CPosition.id, new CPosition(origin));
-        components.set(COrientation.id, new COrientation(angle));
+        components.set(CPosition.id, new CPosition(action.originPos));
+        components.set(COrientation.id, new COrientation(action.angle));
         components.set(CLife.id, new CLife(60));
 
         const velocity = new Vect2D(0, 0);
