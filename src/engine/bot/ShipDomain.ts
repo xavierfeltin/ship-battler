@@ -1,7 +1,7 @@
 import { Domain } from "./Domain";
 import { CTBeShip } from "./Task/CTBeShip";
 
-export class ShipDomain<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; isMining: number, isReadyToFire: number}> extends Domain<T> {
+export class ShipDomain<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; hasShipToProtect: number; isMining: number, isReadyToFire: number}> extends Domain<T> {
     public constructor(indexes: T) {
         super(indexes);
         this.worldState.changeState(this.indexes.isMoving, 0);
@@ -10,6 +10,7 @@ export class ShipDomain<T extends {isMoving: number; isInRange: number; hasEnnem
         this.worldState.changeState(this.indexes.hasAsteroidToMine, 0);
         this.worldState.changeState(this.indexes.isMining, 0);
         this.worldState.changeState(this.indexes.isReadyToFire, 0);
+        this.worldState.changeState(this.indexes.hasShipToProtect, 0);
 
         this.pushTask(new CTBeShip<T>(indexes));
     }

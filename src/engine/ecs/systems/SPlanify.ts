@@ -20,8 +20,8 @@ export class SPlanify implements ISystem {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id, CPlanner.id, CMap.id, CRigidBody.id]);
 
     for (let entity of entities) {
-      const planner = entity.components.get(CPlanner.id) as CPlanner<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4}>;
-      const cdomain = entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4}>;
+      const planner = entity.components.get(CPlanner.id) as CPlanner<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4, hasShipToProtect: 6}>;
+      const cdomain = entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4, hasShipToProtect: 6}>;
       const action: IComponent | undefined = planner.bot.planify(cdomain.domain, entity);
 
       if (action !== undefined) {

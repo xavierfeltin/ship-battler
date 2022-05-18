@@ -4,8 +4,9 @@ import { Method } from "./Method";
 import { CTAttackEnnemy } from "./CTAttackEnnemy";
 import { WorldState } from "../WorldState";
 import { CTMineAsteroid } from "./CTMineAsteroid";
+import { CTProtect } from "./CTProtect";
 
-export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; isMining: number; isReadyToFire: number}> extends CompoundTask<T> {
+export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; hasShipToProtect: number; isMining: number; isReadyToFire: number}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];
@@ -25,7 +26,14 @@ export class CTBeShip<T extends {isMoving: number; isInRange: number; hasEnnemyT
         }
         method = new Method<T>(predicateAttack);
         method.pushTask(new CTAttackEnnemy<T>(indexes));
-        //method.pushTask(new TNavigateTo<T>(indexes));
+        this.methods.push(method);
+
+        let predicateProtect = (worldState: WorldState): boolean => {
+            const hasShipToProtect: boolean = worldState.getState(indexes.hasShipToProtect) === 1;
+            return hasShipToProtect;
+        }
+        method = new Method<T>(predicateProtect);
+        method.pushTask(new CTProtect<T>(indexes));
         this.methods.push(method);
 
         let predicateFind = (worldState: WorldState): boolean => {

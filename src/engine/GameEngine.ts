@@ -64,6 +64,7 @@ export interface ShipConfiguration {
     position: Vect2D;
     speed: number;
     hasShipSensor: boolean;
+    hasAsteroidSensor: boolean;
     team: Team;
     role: ShipRole;
 }
@@ -75,12 +76,12 @@ export interface AsteroidConfiguration {
 export class GameEngine {
     private ecs: ECSManager;
     private ctx: CanvasRenderingContext2D;
-    private cacheSystemsByPriority: {bots: ISystem[], physics: ISystem[], renderers: ISystem[], postprocessing: ISystem[]};
+    private cacheSystemsByPriority: {bots: ISystem[], physics: ISystem[], actions: ISystem[], renderers: ISystem[], postprocessing: ISystem[]};
 
     public constructor(canvas: CanvasRenderingContext2D) {
         this.ecs = new ECSManager();
         this.ctx = canvas;
-        this.cacheSystemsByPriority = {bots: [], physics: [], renderers: [], postprocessing: []};
+        this.cacheSystemsByPriority = {bots: [], physics: [], actions: [], renderers: [], postprocessing: []};
     }
 
     public init() {
@@ -89,43 +90,19 @@ export class GameEngine {
         this.addTimeFrame();
         this.addCollisions()
 
-        this.addShip({
-            position: new Vect2D(200, 200),
-            hasShipSensor: true,
-            speed: 5,
-            team: Team.TeamA,
-            role: ShipRole.Hunting
-        });
+        this.createTeam(Team.TeamA, this.ecs);
+        this.createTeam(Team.TeamB, this.ecs);
 
-
-        this.addShip({
-            position: new Vect2D(500, 500),
-            hasShipSensor: false,
-            speed: 6,
-            team: Team.TeamB,
-            role: ShipRole.Mining
-        });
-
-        /*
-        this.addAsteroid({
-            position: new Vect2D(400, 600)
-        });
-
-        this.addAsteroid({
-            position: new Vect2D(700, 320)
-        });
-
-        this.addAsteroid({
-            position: new Vect2D(100, 100)
-        });
-        */
+        this.createAsteroidField();
 
         this.addBot();
         this.addPhysics();
+        this.addActions();
         this.addRendering();
         this.addPostProcessing();
         this.cacheSystemsByPriority.bots = this.ecs.getSystemListByPriority(ESystems.BOT);
         this.cacheSystemsByPriority.physics = this.ecs.getSystemListByPriority(ESystems.PHYSICS);
+        this.cacheSystemsByPriority.actions = this.ecs.getSystemListByPriority(ESystems.ACTIONS);
         this.cacheSystemsByPriority.renderers = this.ecs.getSystemListByPriority(ESystems.RENDERERS);
         this.cacheSystemsByPriority.postprocessing = this.ecs.getSystemListByPriority(ESystems.POSTPROCESSING);
     }
@@ -136,6 +113,10 @@ export class GameEngine {
         });
 
         this.updatePhysicSystems();
+
+        this.cacheSystemsByPriority.actions.forEach(system => {
+            system.onUpdate(this.ecs);
+        });
 
         this.cacheSystemsByPriority.renderers.forEach(system => {
             system.onUpdate(this.ecs);
@@ -186,7 +167,7 @@ export class GameEngine {
         components.set(CRenderer.id, new CRenderer({
             width: this.ctx.canvas.width,
             height: this.ctx.canvas.height,
-            color: "black",
+            color: "#0c164f",
             ctx: this.ctx
         }));
         this.ecs.addUniqEntity(GameEnityUniqId.Area, components);
@@ -216,21 +197,25 @@ export class GameEngine {
 
     private addShip(config: ShipConfiguration) {
         let components = new Map<string, IComponent>();
-        components.set(CShip.id, new CShip(100, 400));
+        components.set(CShip.id, new CShip(100, 400, 100, config.team, config.role));
         components.set(CLife.id, new CLife(30));
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5})));
+        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5, hasShipToProtect: 6})));
         components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2, isReadyToFire: 5}>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));
         components.set(COrientation.id, new COrientation(0));
         components.set(CVelocity.id, new CVelocity(new Vect2D(0, 0)));
-        components.set(CAsteroidSensor.id, new CAsteroidSensor());
-        if (config.hasShipSensor)
-        {
+
+        if (config.hasAsteroidSensor) {
+            components.set(CAsteroidSensor.id, new CAsteroidSensor());
+        }
+
+        if (config.hasShipSensor) {
             components.set(CShipSensor.id, new CShipSensor());
             components.set(CCannon.id, new CCannon(15));
         }
+
         components.set(CRenderer.id, new CRenderer({
             width: 80,
             height: 80,
@@ -241,12 +226,26 @@ export class GameEngine {
         this.ecs.addEntity(components);
     }
 
+    private createAsteroidField() {
+        this.addAsteroid({
+            position: new Vect2D(400, 600)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(700, 320)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(100, 100)
+        });
+    }
+
     private addAsteroid(config: AsteroidConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CAsteroid.id, new CAsteroid());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CPosition.id, new CPosition(config.position));
-        components.set(CLife.id, new CLife(100));
+        components.set(CLife.id, new CLife(200));
         components.set(CRenderer.id, new CRenderer({
             width: 40,
             height: 40,
@@ -254,6 +253,57 @@ export class GameEngine {
             ctx: this.ctx
         }));
         this.ecs.addEntity(components);
+    }
+
+    private createTeam(team: Team, ecs: ECSManager): void {
+        const startPositions = [];
+        if (team === Team.TeamA) {
+            startPositions.push(new Vect2D(100, 100));
+            startPositions.push(new Vect2D(100, 200));
+            startPositions.push(new Vect2D(100, 300));
+        }
+        else {
+            startPositions.push(new Vect2D(1100, 700));
+            startPositions.push(new Vect2D(1100, 600));
+            startPositions.push(new Vect2D(1100, 500));
+        }
+
+        //this.createHunter(startPositions[0], team, ecs);
+        this.createMiner(startPositions[1], team, ecs);
+        this.createBlocker(startPositions[2], team, ecs);
+    }
+
+    private createHunter(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
+        this.addShip({
+            position: startPosition,
+            hasShipSensor: true,
+            hasAsteroidSensor: false,
+            speed: 4,
+            team: team,
+            role: ShipRole.Hunting
+        });
+    }
+
+    private createMiner(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
+        this.addShip({
+            position: startPosition,
+            hasShipSensor: false,
+            hasAsteroidSensor: true,
+            speed: 4,
+            team: team,
+            role: ShipRole.Mining
+        });
+    }
+
+    private createBlocker(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
+        this.addShip({
+            position: startPosition,
+            hasShipSensor: false,
+            hasAsteroidSensor: false,
+            speed: 3,
+            team: team,
+            role: ShipRole.Blocking
+        });
     }
 
     private addBot() {
@@ -269,9 +319,12 @@ export class GameEngine {
         this.ecs.addSystem("Damage", new SDamage(1), ESystems.PHYSICS);
         this.ecs.addSystem("Orientate", new SOrientate(2), ESystems.PHYSICS);
         this.ecs.addSystem("Move", new SMove(3), ESystems.PHYSICS);
-        this.ecs.addSystem("Mine", new SMine(4), ESystems.PHYSICS);
-        this.ecs.addSystem("Fire", new SFire(5), ESystems.PHYSICS);
-        this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(6), ESystems.PHYSICS);
+        this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(4), ESystems.PHYSICS);
+    }
+
+    private addActions() {
+        this.ecs.addSystem("Mine", new SMine(0), ESystems.ACTIONS);
+        this.ecs.addSystem("Fire", new SFire(1), ESystems.ACTIONS);
     }
 
     private addRendering() {

@@ -19,6 +19,7 @@ import { CShip } from "../../ecs/components/CShip";
 export enum NAVMODE {
     AGRESSIVE,
     MINING,
+    PROTECTING,
     RANDOM
 };
 export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extends Task<T> {
@@ -68,20 +69,8 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         this.from = fromPosition.value;
         if (this.nextPoint === undefined || this.from.distance(this.nextPoint) <= this.stopAtDistance) {
             const waypoint  = this.getNextWaypoint();
-
-            /*
-            const nextPointKey = this.nextPoint === undefined ? "undefined" : this.nextPoint.key();
-            const waypointKey = waypoint === undefined ? "undefined" : waypoint.key();
-            console.log("[AGoTo] waypoint reached " + nextPointKey + " by standing at " + this.from.key() + ", go to next waypoint " + waypointKey);
-            */
             this.nextPoint = waypoint;
         }
-        /*
-        else {
-            const nextPointKey = this.nextPoint === undefined ? "undefined" : this.nextPoint.key();
-            console.log("[AGoTo] keep going to " + nextPointKey + " by standing at " + this.from.key());
-        }
-        */
 
         const nextAction = this.goTo(this.from, this.nextPoint, orientation.heading);
         if (nextAction === undefined) {
@@ -96,9 +85,10 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const shipInfo: CShip = agent.components.get(CShip.id) as CShip;
         this.from = fromPosition.value;
 
+        const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
+        const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
         switch(this.navMode) {
             case NAVMODE.AGRESSIVE:
-                const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
                 if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
                     this.to = shipSensor.detectedPos;
                     console.log("Follow ship target " + shipSensor.detectedShipId);
@@ -108,13 +98,21 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                 }
                 break;
             case NAVMODE.MINING:
-                const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
                 if (asteroidSensor !== undefined && asteroidSensor.detectedPos !== undefined) {
                     this.to = asteroidSensor.detectedPos;
                     console.log("Follow asteroid target " + asteroidSensor.detectedAsteroidId);
                 }
                 if (shipInfo !== undefined) {
                     this.stopAtDistance = shipInfo.miningDistance;
+                }
+                break;
+            case NAVMODE.PROTECTING:
+                if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
+                    this.to = shipSensor.detectedPos;
+                    console.log("Follow ship to protect " + shipSensor.detectedShipId);
+                }
+                if (shipInfo !== undefined) {
+                    this.stopAtDistance = shipInfo.protectingDistance;
                 }
                 break;
             default:

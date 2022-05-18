@@ -48,8 +48,9 @@ export class SRenderShip implements ISystem {
       totalRotationAngleInDegree += renderer.attr.spriteRotation
     }
     ctx.rotate(totalRotationAngleInDegree * Math.PI / 180); // convert from degree to radian and rotate
+    ctx.filter = "brightness(150%)";
     ctx.drawImage(sprite, -transX, -transY, w, h); // draws the sprite
-
+    ctx.filter = "brightness(100%)";
     ctx.restore(); // restore original states (no rotation etc)
   }
 }

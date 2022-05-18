@@ -27,8 +27,9 @@ export class SDetectAsteroid implements ISystem {
           const asteroidPos =  asteroid.components.get(CPosition.id) as CPosition;
           const distance = asteroidPos.value.distance2(shipPos.value);
           if (distance < minDistance) {
-              targetPos = asteroidPos.value;
-              targetName = asteroid.name;
+            targetPos = asteroidPos.value;
+            targetName = asteroid.name;
+            minDistance = distance;
           }
       }
 

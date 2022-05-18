@@ -6,6 +6,7 @@ import { IEntity } from '../IEntity';
 import { CLife } from '../components/CLife';
 import { CMiningBeam } from '../components/CMiningBeam';
 import { CSpeed } from '../components/CSpeed';
+import { GameEnityUniqId } from '../../GameEngine';
 
 export interface MinedAsteroid {
     asteroidId: string;
@@ -22,7 +23,7 @@ export class SMine implements ISystem {
 
     onUpdate(ecs: ECSManager): void {
         const entities = ecs.selectEntitiesFromComponents([CActionMine.id]);
-        const canvas = ecs.selectEntityFromId('Canvas');
+        const canvas = ecs.selectEntityFromId(GameEnityUniqId.Canvas);
 
         if (!canvas) {
             return;

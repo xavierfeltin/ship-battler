@@ -5,6 +5,7 @@ import { ISystem } from "./ISystem";
 export enum ESystems {
     BOT,
     PHYSICS,
+    ACTIONS,
     RENDERERS,
     POSTPROCESSING
 }
@@ -12,6 +13,7 @@ export class ECSManager {
     private entities: Map<string, IEntity>;
     private botSystems: Map<string, ISystem>;
     private physicsSystems: Map<string, ISystem>;
+    private actionsSystems: Map<string, ISystem>;
     private renderersSystems: Map<string, ISystem>;
     private postProcessingSystems: Map<string, ISystem>;
 
@@ -21,6 +23,7 @@ export class ECSManager {
         this.entities = new Map();
         this.botSystems = new Map();
         this.physicsSystems = new Map();
+        this.actionsSystems = new Map();
         this.renderersSystems = new Map();
         this.postProcessingSystems = new Map();
         this.lastId = 0;
@@ -66,6 +69,9 @@ export class ECSManager {
             case ESystems.PHYSICS:
                 this.physicsSystems.set(name, system);
                 break;
+            case ESystems.ACTIONS:
+                this.actionsSystems.set(name, system);
+                break;
             case ESystems.RENDERERS:
                 this.renderersSystems.set(name, system);
                 break;
@@ -85,6 +91,9 @@ export class ECSManager {
                 break;
             case ESystems.PHYSICS:
                 this.physicsSystems.delete(name);
+                break;
+            case ESystems.ACTIONS:
+                this.actionsSystems.delete(name);
                 break;
             case ESystems.RENDERERS:
                 this.renderersSystems.delete(name);
@@ -108,6 +117,8 @@ export class ECSManager {
                 return Array.from(this.botSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
             case ESystems.PHYSICS:
                 return Array.from(this.physicsSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
+            case ESystems.ACTIONS:
+                return Array.from(this.actionsSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
             case ESystems.RENDERERS:
                 return Array.from(this.renderersSystems.entries()).sort(sortByPriority).map((value: [string, ISystem]) => {return value[1]});
             case ESystems.POSTPROCESSING:

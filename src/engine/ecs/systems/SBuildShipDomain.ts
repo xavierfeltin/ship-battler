@@ -8,6 +8,7 @@ import { IEntity } from '../IEntity';
 import { CAsteroidSensor } from '../components/CAsteroidSensor';
 import { CActionMine } from '../components/CActionMine';
 import { CCannon } from '../components/CCannon';
+import { ShipRole } from '../../GameEngine';
 
 export class SBuildShipDomain implements ISystem {
   public id = 'BuildShipDomain';
@@ -19,12 +20,22 @@ export class SBuildShipDomain implements ISystem {
 
   public onUpdate(ecs: ECSManager): void {
     const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
-    for (let ship of entities) {
-        let cDomain =  ship.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5}>;
-        this.updateAttackInformation(ship, cDomain);
-        this.updateMiningInformation(ship, cDomain);
+    for (let shipEntity of entities) {
+        let ship = shipEntity.components.get(CShip.id) as CShip;
+        let cDomain = shipEntity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5, hasShipToProtect: 6}>;
 
-        ship.components.set(CDomain.id, cDomain);
+        switch(ship.role) {
+          case ShipRole.Hunting:
+            this.updateAttackInformation(shipEntity, cDomain);
+            break;
+          case ShipRole.Mining:
+            this.updateMiningInformation(shipEntity, cDomain);
+            break;
+          case ShipRole.Blocking:
+            this.updateProtectingInformation(shipEntity, cDomain);
+            break;
+        }
+        shipEntity.components.set(CDomain.id, cDomain);
     }
   }
 
@@ -69,6 +80,20 @@ export class SBuildShipDomain implements ISystem {
         domain.domain.updateWorldState(domain.domain.indexes.hasAsteroidToMine, 0);
       }
       domain.domain.updateWorldState(domain.domain.indexes.isMining, 0);
+    }
+  }
+
+  private updateProtectingInformation(ship: IEntity, domain: CDomain<{isMoving: 0, isInRange: 1, hasShipToProtect: 6}>): void {
+    let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
+    if (targetPos !== undefined && targetPos.detectedPos !== undefined) {
+      let pos = ship.components.get(CPosition.id) as CPosition;
+      let isInRange = targetPos.detectedPos.distance2(pos.value) < 20000 ? 1 : 0;
+      domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
+      domain.domain.updateWorldState(domain.domain.indexes.hasShipToProtect, 1);
+    }
+    else {
+      domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+      domain.domain.updateWorldState(domain.domain.indexes.hasShipToProtect, 0);
     }
   }
 }
