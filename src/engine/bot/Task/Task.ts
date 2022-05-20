@@ -27,8 +27,8 @@ export class Task<T> {
         return worldState;
     }
 
-    public operate(agent: IEntity): IComponent | undefined {
-        return undefined;
+    public operate(agent: IEntity): IComponent[] {
+        return [];
     }
 
     public info(): string {

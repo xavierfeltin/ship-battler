@@ -15,11 +15,13 @@ import { WorldState } from "../WorldState";
 import { CShipSensor } from "../../ecs/components/CShipSensor";
 import { CAsteroidSensor } from "../../ecs/components/CAsteroidSensor";
 import { CShip } from "../../ecs/components/CShip";
+import { CSpeed } from "../../ecs/components/CSpeed";
 
 export enum NAVMODE {
     AGRESSIVE,
     MINING,
     PROTECTING,
+    INTERCEPTING,
     RANDOM
 };
 export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extends Task<T> {
@@ -56,7 +58,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         return worldState;
     }
 
-    public operate(agent: IEntity): IComponent | undefined {
+    public operate(agent: IEntity): IComponent[] {
         if (this.state === IAActionState.DONE || this.state === IAActionState.NONE) {
             this.definePath(agent);
         }
@@ -65,6 +67,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
 
         const fromPosition: CPosition = agent.components.get(CPosition.id) as CPosition;
         const orientation = agent.components.get(COrientation.id) as COrientation;
+        const speed =  agent.components.get(CSpeed.id) as CSpeed;
 
         this.from = fromPosition.value;
         if (this.nextPoint === undefined || this.from.distance(this.nextPoint) <= this.stopAtDistance) {
@@ -72,12 +75,12 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
             this.nextPoint = waypoint;
         }
 
-        const nextAction = this.goTo(this.from, this.nextPoint, orientation.heading);
-        if (nextAction === undefined) {
+        const nextActions = this.goTo(this.from, this.nextPoint, orientation.heading, speed.maxValue);
+        if (nextActions.length === 1) {
             this.state = IAActionState.DONE;
         }
 
-        return nextAction;
+        return nextActions;
     }
 
     private definePath(agent: IEntity) {
@@ -89,30 +92,47 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
         switch(this.navMode) {
             case NAVMODE.AGRESSIVE:
-                if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
-                    this.to = shipSensor.detectedPos;
-                    console.log("Follow ship target " + shipSensor.detectedShipId);
-                }
-                if (shipInfo !== undefined) {
-                    this.stopAtDistance = shipInfo.shootingDistance;
+                if (shipSensor !== undefined && shipSensor.mainDetectedPos !== undefined) {
+                    this.to = shipSensor.mainDetectedPos;
+                    console.log("Follow ship target " + shipSensor.mainDetectedShipId);
+
+                    if (shipInfo !== undefined) {
+                        this.stopAtDistance = shipInfo.shootingDistance;
+                    }
                 }
                 break;
             case NAVMODE.MINING:
                 if (asteroidSensor !== undefined && asteroidSensor.detectedPos !== undefined) {
                     this.to = asteroidSensor.detectedPos;
                     console.log("Follow asteroid target " + asteroidSensor.detectedAsteroidId);
-                }
-                if (shipInfo !== undefined) {
-                    this.stopAtDistance = shipInfo.miningDistance;
+
+                    if (shipInfo !== undefined) {
+                        this.stopAtDistance = shipInfo.miningDistance;
+                    }
                 }
                 break;
             case NAVMODE.PROTECTING:
-                if (shipSensor !== undefined && shipSensor.detectedPos !== undefined) {
-                    this.to = shipSensor.detectedPos;
-                    console.log("Follow ship to protect " + shipSensor.detectedShipId);
+                if (shipSensor !== undefined && shipSensor.mainDetectedPos !== undefined) {
+                    this.to = shipSensor.mainDetectedPos;
+                    console.log("Follow ship to protect " + shipSensor.mainDetectedShipId);
+
+                    if (shipInfo !== undefined) {
+                        this.stopAtDistance = shipInfo.protectingDistance;
+                    }
                 }
-                if (shipInfo !== undefined) {
-                    this.stopAtDistance = shipInfo.protectingDistance;
+                break;
+            case NAVMODE.INTERCEPTING:
+                if (shipSensor !== undefined && shipSensor.mainDetectedPos !== undefined && shipSensor.secondaryDetectedPos !== undefined) {
+                    const agressionVector = Vect2D.sub(shipSensor.secondaryDetectedPos, shipSensor.mainDetectedPos);
+                    agressionVector.normalize();
+                    agressionVector.mul(shipInfo.protectingDistance);
+                    const interceptionPoint = Vect2D.add(shipSensor.mainDetectedPos, agressionVector);
+                    this.to = interceptionPoint;
+                    console.log("Intercept menace " + shipSensor.secondaryDetectedShipId + " at " + interceptionPoint.key());
+
+                    if (shipInfo !== undefined) {
+                        this.stopAtDistance = 0;
+                    }
                 }
                 break;
             default:
@@ -144,10 +164,12 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         return next;
     }
 
-    private goTo(from: Vect2D, to: Vect2D | undefined, heading: Vect2D): IComponent | undefined {
+    private goTo(from: Vect2D, to: Vect2D | undefined, heading: Vect2D, maxSpeed: number): IComponent[] {
         if (to === undefined)
         {
-            return undefined;
+            const stopSpeed = new CSpeed(maxSpeed);
+            stopSpeed.value = 0;
+            return [stopSpeed];
         }
 
         const trajectory = Vect2D.sub(to, from);
@@ -155,8 +177,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
 
        // console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
-
-        return new CActionTurn(rotationAngleInDegree);
+        return [new CSpeed(maxSpeed), new CActionTurn(rotationAngleInDegree)];
     }
 
     public info(): string {

@@ -6,6 +6,7 @@ import { CPosition } from '../components/CPosition';
 import { CDomain } from '../components/CDomain';
 import { IEntity } from '../IEntity';
 import { ShipRole, Team } from '../../GameEngine';
+import { Vect2D } from '../../utils/Vect2D';
 
 export class SDetectShip implements ISystem {
   public id = 'DetectShip';
@@ -69,34 +70,53 @@ export class SDetectShip implements ISystem {
         const ship = shipEntity.components.get(CShip.id) as CShip;
 
         // Target priority : miners, hunters then blockers
-        let targetGroupsByPriority: IEntity[][] = [];
+        let mainTargetGroupsByPriority: IEntity[][] = [];
+        let secondaryTargetGroupsByPriority: IEntity[][] = [];
         if (ship.role === ShipRole.Hunting) {
-          targetGroupsByPriority = [ennemyMiners, ennemyHunters, ennemyBlockers];
+          mainTargetGroupsByPriority = [ennemyMiners, ennemyHunters, ennemyBlockers];
         }
         else if (ship.role === ShipRole.Blocking) {
-          targetGroupsByPriority = [friendlyMiners, friendlyHunters, friendlyBlockers];
-        }
-
-        let closest = undefined;
-        let index = 0;
-        while (closest === undefined && index < targetGroupsByPriority.length) {
-          closest = this.getClosestInGroupFromPosition(entityPos, targetGroupsByPriority[index]);
-          index++;
+          mainTargetGroupsByPriority = [friendlyMiners, friendlyHunters, friendlyBlockers];
+          secondaryTargetGroupsByPriority = [ennemyHunters];
         }
 
         let sensor = shipEntity.components.get(CShipSensor.id) as CShipSensor;
-        if (closest !== undefined) {
-          const targetPos = closest.components.get(CPosition.id) as CPosition;
-          sensor.detectedPos = targetPos.value;
-          sensor.detectedShipId = closest.name;
+        let sensorInfo = this.getSensorInformationOnGroup(entityPos, mainTargetGroupsByPriority);
+        sensor.mainDetectedPos = sensorInfo.position;
+        sensor.mainDetectedShipId = sensorInfo.id;
+
+        if (secondaryTargetGroupsByPriority.length > 0) {
+          sensorInfo = this.getSensorInformationOnGroup(entityPos, secondaryTargetGroupsByPriority);
+          sensor.secondaryDetectedPos = sensorInfo.position;
+          sensor.secondaryDetectedShipId = sensorInfo.id;
         }
-        else {
-          sensor.detectedPos = undefined;
-          sensor.detectedShipId = "";
-        }
+
         shipEntity.components.set(CShipSensor.id, sensor);
       }
     }
+  }
+
+  private getSensorInformationOnGroup(position: CPosition, groupsEntity: IEntity[][]): {position: Vect2D | undefined, id: string} {
+    let closest = undefined;
+    let index = 0;
+    while (closest === undefined && index < groupsEntity.length) {
+      closest = this.getClosestInGroupFromPosition(position, groupsEntity[index]);
+      index++;
+    }
+
+    let closestPos: Vect2D | undefined = undefined;
+    let closestId: string = "";
+
+    if (closest !== undefined) {
+      const targetPos = closest.components.get(CPosition.id) as CPosition;
+      closestPos = targetPos.value;
+      closestId = closest.name;
+    }
+
+    return {
+      position: closestPos,
+      id: closestId
+    };
   }
 
   private getClosestInGroupFromPosition(position: CPosition, groupEntity: IEntity[]): IEntity | undefined {

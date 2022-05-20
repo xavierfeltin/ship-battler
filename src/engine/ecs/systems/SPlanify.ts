@@ -22,14 +22,16 @@ export class SPlanify implements ISystem {
     for (let entity of entities) {
       const planner = entity.components.get(CPlanner.id) as CPlanner<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4, hasShipToProtect: 6}>;
       const cdomain = entity.components.get(CDomain.id) as CDomain<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4, hasShipToProtect: 6}>;
-      const action: IComponent | undefined = planner.bot.planify(cdomain.domain, entity);
+      const actions: IComponent[] = planner.bot.planify(cdomain.domain, entity);
 
-      if (action !== undefined) {
-        console.log("Next action for " + entity.name + ": " + JSON.stringify(action));
-        ecs.addOrUpdateComponentOnEntity(entity, action);
+      if (actions.length > 0) {
+        console.log("Next actions for " + entity.name + ": " + JSON.stringify(actions));
+        for (let action of actions) {
+          ecs.addOrUpdateComponentOnEntity(entity, action);
+        }
       }
       else {
-        console.warn("The planner returned an undefined action for entity " + entity.name);
+        console.warn("The planner returned no action to perform for entity " + entity.name);
       }
     }
   }

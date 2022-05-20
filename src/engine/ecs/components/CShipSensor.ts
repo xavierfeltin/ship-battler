@@ -5,24 +5,43 @@ export class CShipSensor implements IComponent {
   public static id: string = 'ShipSensor';
   public id: string = CShipSensor.id;
 
-  private _detectedShipId: string;
-    public get detectedShipId(): string {
-        return this._detectedShipId;
+  private _mainDetectedShipId: string;
+    public get mainDetectedShipId(): string {
+        return this._mainDetectedShipId;
     }
-    public set detectedShipId(value: string) {
-        this._detectedShipId = value;
+    public set mainDetectedShipId(value: string) {
+        this._mainDetectedShipId = value;
     }
 
-  private _detectedShipPos: Vect2D | undefined; // in degrees
-    public get detectedPos(): Vect2D | undefined {
-        return this._detectedShipPos;
+  private _mainDetectedShipPos: Vect2D | undefined; // in degrees
+    public get mainDetectedPos(): Vect2D | undefined {
+        return this._mainDetectedShipPos;
     }
-    public set detectedPos(pos: Vect2D | undefined) {
-        this._detectedShipPos = pos;
+    public set mainDetectedPos(pos: Vect2D | undefined) {
+        this._mainDetectedShipPos = pos;
+    }
+
+  private _secondaryDetectedShipId: string;
+    public get secondaryDetectedShipId(): string {
+        return this._secondaryDetectedShipId;
+    }
+    public set secondaryDetectedShipId(value: string) {
+        this._secondaryDetectedShipId = value;
+    }
+
+  private _secondaryDetectedShipPos: Vect2D | undefined; // in degrees
+    public get secondaryDetectedPos(): Vect2D | undefined {
+        return this._secondaryDetectedShipPos;
+    }
+    public set secondaryDetectedPos(pos: Vect2D | undefined) {
+        this._secondaryDetectedShipPos = pos;
     }
 
   constructor() {
-    this._detectedShipId = "";
-    this._detectedShipPos = undefined;
+    this._mainDetectedShipId = "";
+    this._mainDetectedShipPos = undefined;
+
+    this._secondaryDetectedShipId = "";
+    this._secondaryDetectedShipPos = undefined;
   }
 }

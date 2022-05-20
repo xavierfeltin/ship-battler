@@ -64,6 +64,7 @@ export interface ShipConfiguration {
     position: Vect2D;
     speed: number;
     hasShipSensor: boolean;
+    hasCannons: boolean;
     hasAsteroidSensor: boolean;
     team: Team;
     role: ShipRole;
@@ -199,8 +200,20 @@ export class GameEngine {
         let components = new Map<string, IComponent>();
         components.set(CShip.id, new CShip(100, 400, 100, config.team, config.role));
         components.set(CLife.id, new CLife(30));
-        components.set(CDomain.id, new CDomain(new ShipDomain({isMoving: 0, isInRange: 1, hasEnnemyToAttack: 2, hasAsteroidToMine: 3, isMining: 4, isReadyToFire: 5, hasShipToProtect: 6})));
-        components.set(CPlanner.id, new CPlanner<{isMoving: 0, isInRange: 1, hasWeapon: 2, isReadyToFire: 5}>());
+
+        const shipDomainTemplate = {
+            isMoving: 0,
+            isInRange: 1,
+            hasEnnemyToAttack: 2,
+            hasAsteroidToMine: 3,
+            isMining: 4,
+            isReadyToFire: 5,
+            hasShipToProtect: 6,
+            hasFoundMenaceOnProtectedShip: 7
+        };
+        components.set(CDomain.id, new CDomain(new ShipDomain(shipDomainTemplate)));
+
+        components.set(CPlanner.id, new CPlanner<typeof ShipDomain>());
         components.set(CRigidBody.id, new CRigidBody(20));
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));
@@ -213,6 +226,8 @@ export class GameEngine {
 
         if (config.hasShipSensor) {
             components.set(CShipSensor.id, new CShipSensor());
+        }
+        if (config.hasCannons) {
             components.set(CCannon.id, new CCannon(15));
         }
 
@@ -268,7 +283,7 @@ export class GameEngine {
             startPositions.push(new Vect2D(1100, 500));
         }
 
-        //this.createHunter(startPositions[0], team, ecs);
+        this.createHunter(startPositions[0], team, ecs);
         this.createMiner(startPositions[1], team, ecs);
         this.createBlocker(startPositions[2], team, ecs);
     }
@@ -277,6 +292,7 @@ export class GameEngine {
         this.addShip({
             position: startPosition,
             hasShipSensor: true,
+            hasCannons: true,
             hasAsteroidSensor: false,
             speed: 4,
             team: team,
@@ -288,6 +304,7 @@ export class GameEngine {
         this.addShip({
             position: startPosition,
             hasShipSensor: false,
+            hasCannons: false,
             hasAsteroidSensor: true,
             speed: 4,
             team: team,
@@ -298,7 +315,8 @@ export class GameEngine {
     private createBlocker(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
         this.addShip({
             position: startPosition,
-            hasShipSensor: false,
+            hasShipSensor: true,
+            hasCannons: false,
             hasAsteroidSensor: false,
             speed: 3,
             team: team,

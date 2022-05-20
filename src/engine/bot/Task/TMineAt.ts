@@ -27,12 +27,12 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
         return worldState;
     }
 
-    public operate(agent: IEntity): IComponent | undefined {
+    public operate(agent: IEntity): IComponent[] {
         let miningAction: CActionMine | undefined = agent.components.get(CActionMine.id) as CActionMine;
         if (miningAction !== undefined) {
             console.log("[MineAT] mining action is underway");
             //keep mining current asteroid
-            return miningAction;
+            return [miningAction];
         }
 
         if (this.minedAsteroidID === "") {
@@ -48,12 +48,12 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
                 heading.normalize();
 
                 this.state = IAActionState.ONGOING;
-                miningAction = new CActionMine(new Vect2D(pos.value.x, pos.value.y), heading, target, asteroidSensor.detectedAsteroidId);
+                return [new CActionMine(new Vect2D(pos.value.x, pos.value.y), heading, target, asteroidSensor.detectedAsteroidId)];
             }
             else {
                 // no asteroid to mine
                 console.log("[MineAT] no asteroid to mine");
-                miningAction = undefined;
+                return [];
             }
         }
         else {
@@ -61,9 +61,8 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
             console.log("[MineAT] mining of asteroid" + this.minedAsteroidID + " is now done");
             this.minedAsteroidID = "";
             this.state = IAActionState.DONE;
-            miningAction = undefined;
+            return [];
         }
-        return miningAction;
     }
 
     public info(): string {

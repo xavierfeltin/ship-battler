@@ -25,7 +25,7 @@ export class Planner<T> {
         this.sequenceStack = [];
     }
 
-    public planify(domain: Domain<T>, agent: IEntity): IComponent | undefined {
+    public planify(domain: Domain<T>, agent: IEntity): IComponent[] {
 
         // If action being solved is over or no longer valid, get next action on planning
         // if planning no longer valid, regenerate a planning
@@ -47,17 +47,17 @@ export class Planner<T> {
             this.actionBeingSolved = this.planning.pop();
         }
         // else the current action is still being solved
-        const nextActionToPerformByAgent = this.solve(agent);
-        return nextActionToPerformByAgent;
+        const nextActionsToPerformByAgent = this.solve(agent);
+        return nextActionsToPerformByAgent;
     }
 
-    private solve(agent: IEntity): IComponent | undefined {
+    private solve(agent: IEntity): IComponent[] {
         if (this.actionBeingSolved === undefined) {
-            return undefined;
+            return [];
         }
 
-        let nextAction = this.actionBeingSolved.operate(agent);
-        return nextAction;
+        let nextActions = this.actionBeingSolved.operate(agent);
+        return nextActions;
     }
 
     private buildPlanning(domain: Domain<T>, agent: IEntity): void {

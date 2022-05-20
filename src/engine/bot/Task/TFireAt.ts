@@ -26,18 +26,18 @@ export class TFireAt<T extends {isInRange: number; hasEnnemyToAttack: number; is
         return worldState;
     }
 
-    public operate(agent: IEntity): IComponent | undefined {
+    public operate(agent: IEntity): IComponent[] {
         const shipSensor: CShipSensor = agent.components.get(CShipSensor.id) as CShipSensor;
-        if (shipSensor && shipSensor.detectedPos) {
+        if (shipSensor && shipSensor.mainDetectedPos) {
             const pos = agent.components.get(CPosition.id) as CPosition;
             const orientation = agent.components.get(COrientation.id) as COrientation;
-            return new CActionFire(agent.name, new Vect2D(pos.value.x, pos.value.y), orientation.angle);
+            return [new CActionFire(agent.name, new Vect2D(pos.value.x, pos.value.y), orientation.angle)];
         }
 
         // One time action (for now)
         this.state = IAActionState.DONE;
 
-        return undefined;
+        return [];
     }
 
     public info(): string {

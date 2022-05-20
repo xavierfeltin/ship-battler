@@ -63,11 +63,11 @@ export class SMine implements ISystem {
             for (let ship of minedAsteroid.miningShips) {
                 const mine = ship.components.get(CActionMine.id) as CActionMine;
                 if (isAsteroidBeingMined) {
-                    this.stopShipForMining(ship, ecs);
+                    //this.stopShipForMining(ship, ecs);
                     this.addMiningBeam(ship, mine, ecs, canvas.components.get(CCanvas.id) as CCanvas);
                 }
                 else {
-                    this.restartShipAfterMining(ship, ecs);
+                    //this.restartShipAfterMining(ship, ecs);
                     ecs.removeComponentOnEntity(ship, mine);
                     const miningBeam = ship.components.get(CMiningBeam.id) as CMiningBeam;
                     ecs.removeComponentOnEntity(ship, miningBeam);
@@ -76,6 +76,7 @@ export class SMine implements ISystem {
         }
     }
 
+    /*
     private stopShipForMining(ship: IEntity, ecs: ECSManager): void {
         const speed = ship.components.get(CSpeed.id) as CSpeed;
         speed.stop();
@@ -87,6 +88,7 @@ export class SMine implements ISystem {
         speed.go();
         ecs.addOrUpdateComponentOnEntity(ship, speed);
     }
+    */
 
     private mineAsteroid(asteroid: IEntity, nbMiningShips: number, ecs: ECSManager): boolean {
         let life: CLife = asteroid.components.get(CLife.id) as CLife;
