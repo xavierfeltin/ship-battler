@@ -7,6 +7,9 @@ import { CCannon } from '../components/CCannon';
 import { CShip } from '../components/CShip';
 import { GameEnityUniqId } from '../../GameEngine';
 import { CCollisions } from '../components/CCollisions';
+import { CMissile } from '../components/CMissile';
+import { CIgnore } from '../components/CIgnore';
+import { CTarget } from '../components/CTarget';
 
 export class SFinalizeFrame implements ISystem {
   public id = 'FinalizeFrame';
@@ -18,14 +21,16 @@ export class SFinalizeFrame implements ISystem {
 
   public onUpdate(ecs: ECSManager): void {
     this.finalizeShips(ecs);
+    this.finalizeMissiles(ecs);
     this.finalizeCollisions(ecs);
   }
 
   private finalizeShips(ecs: ECSManager) {
     const entities = ecs.selectEntitiesFromComponents([CShip.id]);
     for (let ship of entities) {
-        this.coolDownCannons(ship, ecs);
-        this.deleteFrameComponents(ship, ecs);
+      this.coolDownCannons(ship, ecs);
+      this.deleteFrameComponents(ship, ecs);
+      this.destroyShip(ship, ecs);
     }
   }
 
@@ -51,7 +56,11 @@ export class SFinalizeFrame implements ISystem {
     if (map !== undefined)
       ecs.removeComponentOnEntity(ship, map);
 
-    /*
+    const target = ship.components.get(CTarget.id) as CTarget;
+      if (target !== undefined)
+        ecs.removeComponentOnEntity(ship, target);
+
+        /*
     const orientation = ship.components.get(COrientation.id) as COrientation;
     if (orientation !== undefined)
       ecs.removeComponentOnEntity(ship, orientation);
@@ -72,6 +81,26 @@ export class SFinalizeFrame implements ISystem {
         const collisions = collisionsEntity.components.get('Collisions') as CCollisions;
         collisions.collisions = [];
         ecs.addOrUpdateComponentOnEntity(collisionsEntity, collisions);
+    }
+  }
+
+  private finalizeMissiles(ecs: ECSManager): void {
+    const entities = ecs.selectEntitiesFromComponents([CMissile.id]);
+    for (let missile of entities) {
+        this.destroyMissile(missile, ecs);
+    }
+  }
+
+  private destroyMissile(missile: IEntity, ecs: ECSManager): void {
+    const isDead = missile.components.get(CIgnore.id) as CIgnore;
+    if (isDead !== undefined) {
+        ecs.removeEntity(missile.name);
+    }
+  }
+  private destroyShip(ship: IEntity, ecs: ECSManager): void {
+    const isDead = ship.components.get(CIgnore.id) as CIgnore;
+    if (isDead !== undefined) {
+      ecs.removeEntity(ship.name);
     }
   }
 }

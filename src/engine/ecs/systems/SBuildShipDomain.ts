@@ -9,6 +9,8 @@ import { CAsteroidSensor } from '../components/CAsteroidSensor';
 import { CActionMine } from '../components/CActionMine';
 import { CCannon } from '../components/CCannon';
 import { ShipRole } from '../../GameEngine';
+import { CIgnore } from '../components/CIgnore';
+import { CTarget } from '../components/CTarget';
 
 export class SBuildShipDomain implements ISystem {
   public id = 'BuildShipDomain';
@@ -19,12 +21,13 @@ export class SBuildShipDomain implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
-    const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id]);
+    const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id], [CIgnore.id]);
     for (let shipEntity of entities) {
         let ship = shipEntity.components.get(CShip.id) as CShip;
         let cDomain = shipEntity.components.get(CDomain.id) as CDomain<{
           isMoving: number,
           isInRange: number,
+          isTargetHasMoved: number;
           hasEnnemyToAttack: number,
           hasAsteroidToMine: number,
           isMining: number,
@@ -48,18 +51,28 @@ export class SBuildShipDomain implements ISystem {
     }
   }
 
-  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: number, isInRange: number, hasEnnemyToAttack: number, isReadyToFire: number}>): void {
+  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: number, isInRange: number, isTargetHasMoved: number, hasEnnemyToAttack: number, isReadyToFire: number}>): void {
     let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
     let shipInfo = ship.components.get(CShip.id) as CShip;
-    if (targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
-        let pos = ship.components.get(CPosition.id) as CPosition;
-        let isInRange = targetPos.mainDetectedPos.distance2(pos.value) < (shipInfo.shootingDistance * shipInfo.shootingDistance)  ? 1 : 0;
-        domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
-        domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 1);
+    let oldTarget = ship.components.get(CTarget.id) as CTarget;
+
+    if (oldTarget !== undefined && targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
+      const isTargetStillThere = targetPos.mainDetectedPos.eq(oldTarget.value) ? 1 : 0;
+      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, isTargetStillThere);
     }
     else {
-        domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
-        domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 0);
+      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, 0);
+    }
+
+    if (targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
+      let pos = ship.components.get(CPosition.id) as CPosition;
+      let isInRange = targetPos.mainDetectedPos.distance2(pos.value) < (shipInfo.shootingDistance * shipInfo.shootingDistance)  ? 1 : 0;
+      domain.domain.updateWorldState(domain.domain.indexes.isInRange, isInRange);
+      domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 1);
+    }
+    else {
+      domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+      domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 0);
     }
 
     const cannon = ship.components.get(CCannon.id) as CCannon;

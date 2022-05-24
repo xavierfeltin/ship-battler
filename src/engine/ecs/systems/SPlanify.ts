@@ -7,6 +7,7 @@ import { CPosition } from '../components/CPosition';
 import { CMap } from '../components/CMap';
 import { CRigidBody } from '../components/CRigidBody';
 import { CDomain } from '../components/CDomain';
+import { CIgnore } from '../components/CIgnore';
 
 export class SPlanify implements ISystem {
   public id = 'Planify';
@@ -17,7 +18,7 @@ export class SPlanify implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
-    const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id, CPlanner.id, CMap.id, CRigidBody.id]);
+    const entities = ecs.selectEntitiesFromComponents([CShip.id, CDomain.id, CPosition.id, CPlanner.id, CMap.id, CRigidBody.id], [CIgnore.id]);
 
     for (let entity of entities) {
       const planner = entity.components.get(CPlanner.id) as CPlanner<{isMoving: 0, isInRange: 1, hasAsteroidToMine: 3, isMining: 4, hasShipToProtect: 6}>;

@@ -7,6 +7,7 @@ import { CDomain } from '../components/CDomain';
 import { IEntity } from '../IEntity';
 import { ShipRole, Team } from '../../GameEngine';
 import { Vect2D } from '../../utils/Vect2D';
+import { CIgnore } from '../components/CIgnore';
 
 export class SDetectShip implements ISystem {
   public id = 'DetectShip';
@@ -17,8 +18,8 @@ export class SDetectShip implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
-    const shipEntities = ecs.selectEntitiesFromComponents([CShip.id, CShipSensor.id, CPosition.id, CDomain.id]);
-    const targetShips = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
+    const shipEntities = ecs.selectEntitiesFromComponents([CShip.id, CShipSensor.id, CPosition.id, CDomain.id], [CIgnore.id]);
+    const targetShips = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id], [CIgnore.id]);
 
     // No ship is able to attack
     if (shipEntities.length === 0) {
@@ -31,6 +32,10 @@ export class SDetectShip implements ISystem {
         const ship = shipEntity.components.get(CShip.id) as CShip;
         return ship.team === team;
       });
+
+      if (shipsTeam.length === 0) {
+        break;
+      }
 
       const firstShip = shipsTeam[0].components.get(CShip.id) as CShip;
       const currentTeam = firstShip.team;

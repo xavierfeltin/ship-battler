@@ -5,7 +5,6 @@ import { CActionMine } from '../components/CActionMine';
 import { IEntity } from '../IEntity';
 import { CLife } from '../components/CLife';
 import { CMiningBeam } from '../components/CMiningBeam';
-import { CSpeed } from '../components/CSpeed';
 import { GameEnityUniqId } from '../../GameEngine';
 
 export interface MinedAsteroid {

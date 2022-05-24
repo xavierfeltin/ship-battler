@@ -16,6 +16,7 @@ import { CShipSensor } from "../../ecs/components/CShipSensor";
 import { CAsteroidSensor } from "../../ecs/components/CAsteroidSensor";
 import { CShip } from "../../ecs/components/CShip";
 import { CSpeed } from "../../ecs/components/CSpeed";
+import { CTarget } from "../../ecs/components/CTarget";
 
 export enum NAVMODE {
     AGRESSIVE,
@@ -24,7 +25,7 @@ export enum NAVMODE {
     INTERCEPTING,
     RANDOM
 };
-export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extends Task<T> {
+export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number}> extends Task<T> {
     public static id: string = "GoTo";
     public id: string = TNavigateTo.id;
 
@@ -49,7 +50,8 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
 
     public canBeRun(worldState: WorldState): boolean {
         // For now always can navigate to some place even if already on movement
-        return true;
+        const isTargetHasMoved: boolean = worldState.getState(this.indexes.isTargetHasMoved) === 0;
+        return isTargetHasMoved;
     }
 
     public applyEffects(worldState: WorldState): WorldState {
@@ -131,7 +133,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
                     console.log("Intercept menace " + shipSensor.secondaryDetectedShipId + " at " + interceptionPoint.key());
 
                     if (shipInfo !== undefined) {
-                        this.stopAtDistance = 0;
+                        this.stopAtDistance = 5; // 0 is too strict
                     }
                 }
                 break;
@@ -177,7 +179,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number}> extend
         const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
 
        // console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
-        return [new CSpeed(maxSpeed), new CActionTurn(rotationAngleInDegree)];
+        return [new CSpeed(maxSpeed), new CActionTurn(rotationAngleInDegree), new CTarget(to)];
     }
 
     public info(): string {

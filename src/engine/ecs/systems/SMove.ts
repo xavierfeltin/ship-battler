@@ -11,6 +11,7 @@ import { IEntity } from '../IEntity';
 import { CMissile } from '../components/CMissile';
 import { CLife } from '../components/CLife';
 import { GameEnityUniqId } from '../../GameEngine';
+import { CIgnore } from '../components/CIgnore';
 
 export class SMove implements ISystem {
   public id = 'Move';
@@ -24,19 +25,25 @@ export class SMove implements ISystem {
     const timeFrame = ecs.selectEntityFromId(GameEnityUniqId.TimeFrame)?.components.get(CTimeFrame.id) as CTimeFrame;
     const time = timeFrame.time;
 
-    const ships = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id, COrientation.id, CSpeed.id, CVelocity.id]);
+    const ships = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id, COrientation.id, CSpeed.id, CVelocity.id], [CIgnore.id]);
     for (let ship of ships) {
       this.move(ship, time, ecs);
     }
 
-    const missiles = ecs.selectEntitiesFromComponents([CMissile.id, CPosition.id, COrientation.id, CSpeed.id, CVelocity.id, CLife.id]);
+    const missiles = ecs.selectEntitiesFromComponents([CMissile.id, CPosition.id, COrientation.id, CSpeed.id, CVelocity.id, CLife.id], [CIgnore.id]);
     for (let missile of missiles) {
-      this.move(missile, time, ecs);
-      this.updateTTL(missile, ecs);
+        this.move(missile, time, ecs);
+        this.updateTTL(missile, ecs);
     }
   }
 
   private move(entity: IEntity, time: number, ecs: ECSManager): void {
+    const life: CLife = entity.components.get(CLife.id) as CLife;
+    if (life.value === 0) {
+      // Dead missiles do not move
+      return;
+    }
+
     const pos = entity.components.get(CPosition.id) as CPosition;
     const orientation = entity.components.get(COrientation.id) as COrientation;
     const speed = entity.components.get(CSpeed.id) as CSpeed;
@@ -55,6 +62,11 @@ export class SMove implements ISystem {
     if (life !== undefined) {
       life.value = life.value - 1;
       ecs.addOrUpdateComponentOnEntity(missile, life);
+
+      if (life.value === 0) {
+        const deadComponent = new CIgnore();
+        ecs.addOrUpdateComponentOnEntity(missile, deadComponent);
+      }
     }
   }
 }

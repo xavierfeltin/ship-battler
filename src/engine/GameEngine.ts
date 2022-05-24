@@ -209,7 +209,8 @@ export class GameEngine {
             isMining: 4,
             isReadyToFire: 5,
             hasShipToProtect: 6,
-            hasFoundMenaceOnProtectedShip: 7
+            hasFoundMenaceOnProtectedShip: 7,
+            isTargetHasMoved: 8
         };
         components.set(CDomain.id, new CDomain(new ShipDomain(shipDomainTemplate)));
 

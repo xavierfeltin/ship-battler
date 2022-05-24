@@ -4,7 +4,7 @@ import { Method } from "./Method";
 import { WorldState } from "../WorldState";
 import { TMineAt } from "./TMineAt";
 
-export class CTMineAsteroid<T extends {isMoving: number; isInRange: number; hasAsteroidToMine: number; isMining: number;}> extends CompoundTask<T> {
+export class CTMineAsteroid<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number; hasAsteroidToMine: number; isMining: number;}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];

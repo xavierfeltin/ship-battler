@@ -4,6 +4,7 @@ import { GameEnityUniqId } from '../../GameEngine';
 import { CCollisions } from '../components/CCollisions';
 import { CLife } from '../components/CLife';
 import { CMissile } from '../components/CMissile';
+import { CIgnore } from '../components/CIgnore';
 
 export class SDamage implements ISystem {
   public id = 'Damage';
@@ -30,15 +31,18 @@ export class SDamage implements ISystem {
         }
 
         const shipLife = shipEntity.components.get(CLife.id) as CLife;
-
         const missile = missileEntity.components.get(CMissile.id) as CMissile;
-        const missileTTL = missileEntity.components.get(CLife.id) as CLife;
 
         shipLife.value = Math.max(0, shipLife.value - missile.damage);
         ecs.addOrUpdateComponentOnEntity(shipEntity, shipLife);
 
-        missileTTL.value = 0;
-        ecs.addOrUpdateComponentOnEntity(missileEntity, missileTTL);
+        if (shipLife.value === 0) {
+          const deadComponent = new CIgnore();
+          ecs.addOrUpdateComponentOnEntity(shipEntity, deadComponent);
+        }
+
+        const deadComponent = new CIgnore();
+        ecs.addOrUpdateComponentOnEntity(missileEntity, deadComponent);
     }
   }
 }

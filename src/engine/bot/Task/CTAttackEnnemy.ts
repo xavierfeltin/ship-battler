@@ -4,7 +4,7 @@ import { TFireAt } from "./TFireAt";
 import { Method } from "./Method";
 import { WorldState } from "../WorldState";
 
-export class CTAttackEnnemy<T extends {isMoving: number; isInRange: number; hasEnnemyToAttack: number; isReadyToFire: number;}> extends CompoundTask<T> {
+export class CTAttackEnnemy<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number; hasEnnemyToAttack: number; isReadyToFire: number;}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];

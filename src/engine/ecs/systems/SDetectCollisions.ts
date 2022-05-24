@@ -9,6 +9,7 @@ import { CVelocity } from '../components/CVelocity';
 import { GameEnityUniqId } from '../../GameEngine';
 import { CShip } from '../components/CShip';
 import { CMissile } from '../components/CMissile';
+import { CIgnore } from '../components/CIgnore';
 
 export class SDetectCollisions implements ISystem {
   public id = 'DetectCollisions';
@@ -19,8 +20,8 @@ export class SDetectCollisions implements ISystem {
     }
 
     onUpdate(ecs: ECSManager): void {
-        const ships = ecs.selectEntitiesFromComponents([CShip.id, CRigidBody.id, CPosition.id, CVelocity.id], ['HasToBeDeleted']);
-        const missiles = ecs.selectEntitiesFromComponents([CMissile.id, CRigidBody.id, CPosition.id, CVelocity.id], ['HasToBeDeleted']);
+        const ships = ecs.selectEntitiesFromComponents([CShip.id, CRigidBody.id, CPosition.id, CVelocity.id], [CIgnore.id]);
+        const missiles = ecs.selectEntitiesFromComponents([CMissile.id, CRigidBody.id, CPosition.id, CVelocity.id], [CIgnore.id]);
 
         const entityCollision = ecs.selectEntityFromId(GameEnityUniqId.Collisions);
         const entityTimeFrame = ecs.selectEntityFromId(GameEnityUniqId.TimeFrame);
