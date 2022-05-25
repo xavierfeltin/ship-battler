@@ -1,7 +1,8 @@
 import { Vect2D } from '../../utils/Vect2D';
 import { IComponent } from '../IComponent';
+import { CPartialActionWithCooldown } from './CPartialActionWithCooldown';
 
-export class CShipSensor implements IComponent {
+export class CShipSensor extends CPartialActionWithCooldown implements IComponent {
   public static id: string = 'ShipSensor';
   public id: string = CShipSensor.id;
 
@@ -37,7 +38,9 @@ export class CShipSensor implements IComponent {
         this._secondaryDetectedShipPos = pos;
     }
 
-  constructor() {
+  constructor(reloadTime: number) {
+    super(reloadTime);
+
     this._mainDetectedShipId = "";
     this._mainDetectedShipPos = undefined;
 

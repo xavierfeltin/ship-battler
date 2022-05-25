@@ -38,7 +38,7 @@ export class SFire implements ISystem {
             ecs.removeComponentOnEntity(entity, fire);
 
             const cannon = entity.components.get(CCannon.id) as CCannon;
-            cannon.fire();
+            cannon.activate();
             ecs.addOrUpdateComponentOnEntity(entity, cannon);
         }
     }

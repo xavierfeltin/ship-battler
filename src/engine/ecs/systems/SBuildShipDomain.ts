@@ -57,8 +57,8 @@ export class SBuildShipDomain implements ISystem {
     let oldTarget = ship.components.get(CTarget.id) as CTarget;
 
     if (oldTarget !== undefined && targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
-      const isTargetStillThere = targetPos.mainDetectedPos.eq(oldTarget.value) ? 1 : 0;
-      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, isTargetStillThere);
+      const isTargetHasMoved = targetPos.mainDetectedPos.eq(oldTarget.value) ? 0 : 1;
+      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, isTargetHasMoved);
     }
     else {
       domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, 0);

@@ -73,6 +73,14 @@ export class SDetectShip implements ISystem {
       for (let shipEntity of shipsTeam) {
         const entityPos =  shipEntity.components.get(CPosition.id) as CPosition;
         const ship = shipEntity.components.get(CShip.id) as CShip;
+        let sensor = shipEntity.components.get(CShipSensor.id) as CShipSensor;
+
+        if (sensor.isOperational()) {
+          sensor.activate();
+        }
+        else {
+          continue;
+        }
 
         // Target priority : miners, hunters then blockers
         let mainTargetGroupsByPriority: IEntity[][] = [];
@@ -85,7 +93,6 @@ export class SDetectShip implements ISystem {
           secondaryTargetGroupsByPriority = [ennemyHunters];
         }
 
-        let sensor = shipEntity.components.get(CShipSensor.id) as CShipSensor;
         let sensorInfo = this.getSensorInformationOnGroup(entityPos, mainTargetGroupsByPriority);
         sensor.mainDetectedPos = sensorInfo.position;
         sensor.mainDetectedShipId = sensorInfo.id;

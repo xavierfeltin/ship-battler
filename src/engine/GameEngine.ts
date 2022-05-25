@@ -40,6 +40,7 @@ import { CCollisions } from "./ecs/components/CCollisions";
 import { SDamage } from "./ecs/systems/SDamage";
 import { SFinalizeFrame } from "./ecs/systems/SFinalizeFrame";
 import { SFinalizePhysicsUpdate } from "./ecs/systems/SFinalizePhysicsUpdate";
+import { SNavigate } from "./ecs/systems/SNavigate";
 
 export enum GameEnityUniqId {
     Collisions = "collisions",
@@ -113,11 +114,11 @@ export class GameEngine {
             system.onUpdate(this.ecs);
         });
 
-        this.updatePhysicSystems();
-
         this.cacheSystemsByPriority.actions.forEach(system => {
             system.onUpdate(this.ecs);
         });
+
+        this.updatePhysicSystems();
 
         this.cacheSystemsByPriority.renderers.forEach(system => {
             system.onUpdate(this.ecs);
@@ -226,7 +227,7 @@ export class GameEngine {
         }
 
         if (config.hasShipSensor) {
-            components.set(CShipSensor.id, new CShipSensor());
+            components.set(CShipSensor.id, new CShipSensor(5));
         }
         if (config.hasCannons) {
             components.set(CCannon.id, new CCannon(15));
@@ -342,8 +343,9 @@ export class GameEngine {
     }
 
     private addActions() {
-        this.ecs.addSystem("Mine", new SMine(0), ESystems.ACTIONS);
-        this.ecs.addSystem("Fire", new SFire(1), ESystems.ACTIONS);
+        this.ecs.addSystem("Navigate", new SNavigate(0), ESystems.ACTIONS);
+        this.ecs.addSystem("Mine", new SMine(1), ESystems.ACTIONS);
+        this.ecs.addSystem("Fire", new SFire(2), ESystems.ACTIONS);
     }
 
     private addRendering() {

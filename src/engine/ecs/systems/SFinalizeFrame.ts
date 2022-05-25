@@ -10,6 +10,7 @@ import { CCollisions } from '../components/CCollisions';
 import { CMissile } from '../components/CMissile';
 import { CIgnore } from '../components/CIgnore';
 import { CTarget } from '../components/CTarget';
+import { CShipSensor } from '../components/CShipSensor';
 
 export class SFinalizeFrame implements ISystem {
   public id = 'FinalizeFrame';
@@ -29,8 +30,22 @@ export class SFinalizeFrame implements ISystem {
     const entities = ecs.selectEntitiesFromComponents([CShip.id]);
     for (let ship of entities) {
       this.coolDownCannons(ship, ecs);
+      this.coolDownSensors(ship, ecs);
       this.deleteFrameComponents(ship, ecs);
       this.destroyShip(ship, ecs);
+    }
+  }
+
+  private coolDownSensors(ship: IEntity, ecs: ECSManager): void {
+    const sensor = ship.components.get(CShipSensor.id) as CShipSensor;
+    if (sensor !== undefined) {
+        if (sensor.isCooldownOver()) {
+          sensor.reset();
+        }
+        else if (sensor.hasBeenActivated) {
+          sensor.decrement();
+        }
+        ecs.addOrUpdateComponentOnEntity(ship, sensor);
     }
   }
 
@@ -40,7 +55,7 @@ export class SFinalizeFrame implements ISystem {
         if (cannon.isCooldownOver()) {
           cannon.reset();
         }
-        else if (cannon.hasFired) {
+        else if (cannon.hasBeenActivated) {
           cannon.decrement();
         }
         ecs.addOrUpdateComponentOnEntity(ship, cannon);
@@ -59,12 +74,6 @@ export class SFinalizeFrame implements ISystem {
     const target = ship.components.get(CTarget.id) as CTarget;
       if (target !== undefined)
         ecs.removeComponentOnEntity(ship, target);
-
-        /*
-    const orientation = ship.components.get(COrientation.id) as COrientation;
-    if (orientation !== undefined)
-      ecs.removeComponentOnEntity(ship, orientation);
-    */
   }
 
   // Reset collision history for the new frame
