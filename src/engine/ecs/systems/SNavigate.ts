@@ -38,7 +38,12 @@ export class SNavigate implements ISystem {
             nav.attachPath(path);
         }
 
-        if (this.isWaypointHasBeenReached(from, nav)) {
+        if (this.isFinalDestinationHasBeenReached(from, nav)) {
+            // Avoid issue where destination is too close and cause oscillating effect
+            // Force entity to not move
+            nav.forceEndOfNavigation();
+        }
+        else if (this.isWaypointHasBeenReached(from, nav)) {
             nav.goToNextWayPoint();
         }
 
@@ -53,6 +58,10 @@ export class SNavigate implements ISystem {
 
     private isWaypointHasBeenReached(from: CPosition, nav: CNavigation): boolean {
         return (nav.currentWayPoint === undefined || from.value.distance(nav.currentWayPoint) <= nav.stopAtDistance);
+    }
+
+    private isFinalDestinationHasBeenReached(from: CPosition, nav: CNavigation): boolean {
+        return from.value.distance(nav.destination) <= nav.stopAtDistance;
     }
 
     private navigate(entity: IEntity, ecs: ECSManager): void {

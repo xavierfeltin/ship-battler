@@ -65,4 +65,10 @@ export class CNavigation implements IComponent {
   public isNavigationOver(): boolean {
     return this.hasDestinationBeenReached;
   }
+
+  public forceEndOfNavigation() : void {
+    this.hasDestinationBeenReached = true;
+    this.path = [];
+    this._currentWayPoint = undefined;
+  }
 }
