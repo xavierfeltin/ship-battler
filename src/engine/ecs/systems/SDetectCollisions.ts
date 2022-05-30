@@ -1,5 +1,5 @@
 import { ISystem } from '../ISystem';
-import { Collision, CollisionHelper } from '../../utils/UCollision';
+import { Collision, CollisionHelper, COLLISION_TYPE } from '../../utils/UCollision';
 import { CCollisions } from '../components/CCollisions';
 import { ECSManager } from '../ECSManager';
 import { CTimeFrame } from '../components/CTimeFrame';
@@ -10,6 +10,7 @@ import { GameEnityUniqId } from '../../GameEngine';
 import { CShip } from '../components/CShip';
 import { CMissile } from '../components/CMissile';
 import { CIgnore } from '../components/CIgnore';
+import { Vect2D } from '../../utils/Vect2D';
 
 export class SDetectCollisions implements ISystem {
   public id = 'DetectCollisions';
@@ -44,46 +45,60 @@ export class SDetectCollisions implements ISystem {
             const posA = shipEntity.components.get('Position') as CPosition;
             const velA = shipEntity.components.get('Velocity') as CVelocity;
 
-            // Collision with other objects
+            // Collision with ships
+            for (let otherShipEntity of ships) {
+                const rbB: CRigidBody = otherShipEntity.components.get('RigidBody') as CRigidBody;
+                const posB: CPosition = otherShipEntity.components.get('Position') as CPosition;
+                const velB: CVelocity = otherShipEntity.components.get('Velocity') as CVelocity;
+
+                let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, otherShipEntity.name, previousCollision.collisions);
+                if(this.isCollisionBetweenStaticElements(velA.value, velB.value)) {
+                    break;
+                }
+
+                // Do not detect collision with itself
+                if (this.isCollisionEligible(shipEntity.name, otherShipEntity.name, alreadyCollidedThisFrame)) {
+                    firstCollision = this.detectNewFirstCollision(
+                        shipEntity.name,
+                        posA.value,
+                        velA.value,
+                        rbA.radius,
+                        otherShipEntity.name,
+                        posB.value,
+                        velB.value,
+                        rbB.radius,
+                        firstCollision,
+                        timeFrame.time,
+                        COLLISION_TYPE.ShipShip);
+                }
+            }
+
+            // Collision with missiles
             for (let missileEntity of missiles) {
                 const rbB: CRigidBody = missileEntity.components.get('RigidBody') as CRigidBody;
                 const posB: CPosition = missileEntity.components.get('Position') as CPosition;
                 const velB: CVelocity = missileEntity.components.get('Velocity') as CVelocity;
                 const missile: CMissile = missileEntity.components.get('Missile') as CMissile;
 
-                let alreadyCollidedThisFrame = false;
-                for (const prevColl of previousCollision.collisions) {
-                    if ((prevColl.idA === shipEntity.name && prevColl.idB === missileEntity.name)
-                    || (prevColl.idA === missileEntity.name && prevColl.idB === shipEntity.name)) {
-                        alreadyCollidedThisFrame = true;
-                        break;
-                    }
-                }
-
-                // detection between static elements, could not happen
-                if (velA.value.x === 0 && velA.value.y === 0
-                && velB.value.x === 0 && velB.value.y === 0) {
+                let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, missileEntity.name, previousCollision.collisions);
+                if(this.isCollisionBetweenStaticElements(velA.value, velB.value)) {
                     break;
                 }
 
                 // Do not detect collision when a missile is colliding with its the ship is originated from
-                if (shipEntity.name !== missile.shipId && !alreadyCollidedThisFrame) {
-                    // detect collisions
-                    const newCollision = CollisionHelper.detectCollision(
-                        shipEntity.name, missileEntity.name,
-                        posA.value, posB.value,
-                        velA.value, velB.value,
-                        rbA.radius, rbB.radius,
-                        firstCollision);
-
-                    // If the collision happens earlier than the current one we keep it
-                    const collisionTime = newCollision.collisionTime + timeFrame.time;
-                    const isNewCollisionHappenedDuringThisFrame = 0.0 <= collisionTime && collisionTime < 1.0;
-                    const isFirstCollisionEmpty = CollisionHelper.isCollisionEmpty(firstCollision);
-                    const isNewCollisionHappenedBeforeFirstOne = newCollision.collisionTime < firstCollision.collisionTime;
-                    if (isNewCollisionHappenedDuringThisFrame && (isFirstCollisionEmpty || isNewCollisionHappenedBeforeFirstOne)) {
-                        firstCollision = newCollision;
-                    }
+                if (this.isCollisionEligible(shipEntity.name, missile.shipId, alreadyCollidedThisFrame)) {
+                    firstCollision = this.detectNewFirstCollision(
+                        shipEntity.name,
+                        posA.value,
+                        velA.value,
+                        rbA.radius,
+                        missileEntity.name,
+                        posB.value,
+                        velB.value,
+                        rbB.radius,
+                        firstCollision,
+                        timeFrame.time,
+                        COLLISION_TYPE.ShipMissile);
                 }
             }
 
@@ -108,5 +123,50 @@ export class SDetectCollisions implements ISystem {
 
         ecs.addOrUpdateComponentOnEntity(entityCollision, collisions);
         ecs.addOrUpdateComponentOnEntity(entityTimeFrame, timeFrame);
+    }
+
+    private hasAlreayCollidedThisFrame(idA: string, idB: string, previousCollisionsThisFrame: Collision[]): boolean {
+        let alreadyCollidedThisFrame = false;
+        for (const prevColl of previousCollisionsThisFrame) {
+            if ((prevColl.idA === idA && prevColl.idB === idB)
+            || (prevColl.idA === idB && prevColl.idB === idA)) {
+                alreadyCollidedThisFrame = true;
+                break;
+            }
+        }
+
+        return alreadyCollidedThisFrame;
+    }
+
+    private isCollisionEligible(idA: string, idB: string, hasAlreadyCollidedThisFrame: boolean): boolean {
+        return idA !== idB && !hasAlreadyCollidedThisFrame;
+    }
+
+    private isCollisionBetweenStaticElements(velA: Vect2D, velB: Vect2D): boolean {
+        return (velA.x === 0 && velA.y === 0
+            && velB.x === 0 && velB.y === 0)
+    }
+
+    private detectNewFirstCollision(idA: string, posA: Vect2D, velA: Vect2D, radiusA: number, idB: string, posB: Vect2D, velB: Vect2D, radiusB: number, firstCollision: Collision, time: number, type: COLLISION_TYPE): Collision {
+        // detect collisions
+        const newCollision = CollisionHelper.detectCollision(
+            idA, idB,
+            posA, posB,
+            velA, velB,
+            radiusA, radiusB,
+            firstCollision,
+            type);
+
+        // If the collision happens earlier than the current one we keep it
+        const collisionTime = newCollision.collisionTime + time;
+        const isNewCollisionHappenedDuringThisFrame = 0.0 <= collisionTime && collisionTime < 1.0;
+        const isFirstCollisionEmpty = CollisionHelper.isCollisionEmpty(firstCollision);
+        const isNewCollisionHappenedBeforeFirstOne = newCollision.collisionTime < firstCollision.collisionTime;
+        if (isNewCollisionHappenedDuringThisFrame && (isFirstCollisionEmpty || isNewCollisionHappenedBeforeFirstOne)) {
+            return newCollision;
+        }
+        else {
+            return firstCollision;
+        }
     }
 }

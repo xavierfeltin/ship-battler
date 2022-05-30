@@ -5,6 +5,7 @@ import { CCollisions } from '../components/CCollisions';
 import { CLife } from '../components/CLife';
 import { CMissile } from '../components/CMissile';
 import { CIgnore } from '../components/CIgnore';
+import { Collision, COLLISION_TYPE } from '../../utils/UCollision';
 
 export class SDamage implements ISystem {
   public id = 'Damage';
@@ -21,7 +22,11 @@ export class SDamage implements ISystem {
     }
 
     const collisions = entityCollision.components.get(CCollisions.id) as CCollisions;
-    for (let collision of collisions.collisions) {
+    const collisionsToSolve = collisions.collisions.filter((collision: Collision) => {
+      return collision.type === COLLISION_TYPE.ShipMissile;
+    })
+
+    for (let collision of collisionsToSolve) {
         const shipEntity = ecs.selectEntityFromId(collision.idA);
         const missileEntity = ecs.selectEntityFromId(collision.idB);
 

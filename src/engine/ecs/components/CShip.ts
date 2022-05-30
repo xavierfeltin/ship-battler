@@ -44,11 +44,20 @@ export class CShip implements IComponent {
     this._protectingDistance = value;
   }
 
+  private _mass: number;
+  public get mass(): number {
+    return this._mass;
+  }
+  public set mass(value: number) {
+    this._mass = value;
+  }
+
   public constructor(miningDistance: number, shootingDistance: number, protectingDistance: number, team: Team, role: ShipRole) {
     this._miningDistance = miningDistance;
     this._shootingDistance = shootingDistance;
     this._protectingDistance = protectingDistance;
     this._team = team;
     this._role = role;
+    this._mass = 10;
   }
 }

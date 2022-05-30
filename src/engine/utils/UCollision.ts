@@ -1,5 +1,10 @@
 import { Vect2D } from "./Vect2D";
 
+export enum COLLISION_TYPE {
+    ShipShip,
+    ShipMissile
+};
+
 export interface Collision {
     idA: string,
     idB: string,
@@ -9,14 +14,15 @@ export interface Collision {
     velB: Vect2D,
     radiusA: number,
     radiusB: number,
-    collisionTime: number
+    collisionTime: number,
+    type: COLLISION_TYPE | undefined
 };
 
 export class CollisionHelper {
 
     public static createCollision( idA: string, idB: string, pA: Vect2D,
         pB: Vect2D, vA: Vect2D, vB: Vect2D, rA: number,
-        rB: number, time: number): Collision {
+        rB: number, time: number, type: COLLISION_TYPE | undefined): Collision {
         return {
             idA: idA,
             idB: idB,
@@ -26,7 +32,8 @@ export class CollisionHelper {
             velB: vB,
             radiusA: rA,
             radiusB: rB,
-            collisionTime: time
+            collisionTime: time,
+            type: type
         }
     }
 
@@ -40,7 +47,8 @@ export class CollisionHelper {
             velB: new Vect2D(-1,-1),
             radiusA: -1,
             radiusB: -1,
-            collisionTime: -1
+            collisionTime: -1,
+            type: undefined
         };
     }
 
@@ -74,7 +82,7 @@ export class CollisionHelper {
         posA: Vect2D, posB: Vect2D,
         velA: Vect2D, velB: Vect2D,
         radiusA: number, radiusB: number,
-        previousCollision: Collision): Collision {
+        previousCollision: Collision, type: COLLISION_TYPE | undefined): Collision {
 
         // Collision is not possible if ships are going in opposite directions
         let collision: Collision = CollisionHelper.createEmptyCollision();
@@ -86,7 +94,7 @@ export class CollisionHelper {
             collision = CollisionHelper.createEmptyCollision();
         }
         else {
-            collision = CollisionHelper.getCollsion(idA, idB, posB, posA, velB, velA, radiusB, radiusA);
+            collision = CollisionHelper.getCollsion(idA, idB, posB, posA, velB, velA, radiusB, radiusA, type);
         }
 
         if (!CollisionHelper.isCollisionEmpty(collision)) {
@@ -105,7 +113,8 @@ export class CollisionHelper {
         idA: string, idB: string,
         posA: Vect2D, posB: Vect2D,
         veloA: Vect2D, veloB: Vect2D,
-        radiusA: number, radiusB: number): Collision {
+        radiusA: number, radiusB: number,
+        type: COLLISION_TYPE | undefined): Collision {
         // Use square distance to avoid using root function
         const distanceToOther = posA.distance2(posB);
         const radii = (radiusA + radiusB);
@@ -113,7 +122,7 @@ export class CollisionHelper {
 
         if (distanceToOther <= radiiSquared) {
             // Units are already in contact so there is an immediate collision
-            return CollisionHelper.createCollision(idA, idB, posA, posB, veloA, veloB, radiusA, radiusB, 0.0);
+            return CollisionHelper.createCollision(idA, idB, posA, posB, veloA, veloB, radiusA, radiusB, 0.0, type);
         }
 
         // Optimisation : units with the same vector speed will never collide
@@ -171,7 +180,7 @@ export class CollisionHelper {
             if (t > 1.0) {
                 return CollisionHelper.createEmptyCollision(); // no taking into account late collision
             }
-            return CollisionHelper.createCollision(idA, idB, posA, posB, veloA, veloB, radiusA, radiusB, t);
+            return CollisionHelper.createCollision(idA, idB, posA, posB, veloA, veloB, radiusA, radiusB, t, type);
         } else {
             return CollisionHelper.createEmptyCollision();
         }

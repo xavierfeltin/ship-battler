@@ -41,6 +41,7 @@ import { SDamage } from "./ecs/systems/SDamage";
 import { SFinalizeFrame } from "./ecs/systems/SFinalizeFrame";
 import { SFinalizePhysicsUpdate } from "./ecs/systems/SFinalizePhysicsUpdate";
 import { SNavigate } from "./ecs/systems/SNavigate";
+import { SBounce } from "./ecs/systems/SBounce";
 
 export enum GameEnityUniqId {
     Collisions = "collisions",
@@ -337,9 +338,10 @@ export class GameEngine {
     private addPhysics() {
         this.ecs.addSystem("DetectCollisions", new SDetectCollisions(0), ESystems.PHYSICS);
         this.ecs.addSystem("Damage", new SDamage(1), ESystems.PHYSICS);
-        this.ecs.addSystem("Orientate", new SOrientate(2), ESystems.PHYSICS);
-        this.ecs.addSystem("Move", new SMove(3), ESystems.PHYSICS);
-        this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(4), ESystems.PHYSICS);
+        this.ecs.addSystem("Bounce", new SBounce(2), ESystems.PHYSICS);
+        this.ecs.addSystem("Orientate", new SOrientate(3), ESystems.PHYSICS);
+        this.ecs.addSystem("Move", new SMove(4), ESystems.PHYSICS);
+        this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(5), ESystems.PHYSICS);
     }
 
     private addActions() {
