@@ -12,6 +12,7 @@ import { CMissile } from '../components/CMissile';
 import { CLife } from '../components/CLife';
 import { GameEnityUniqId } from '../../GameEngine';
 import { CIgnore } from '../components/CIgnore';
+import { CBouncing } from '../components/CBouncing';
 
 export class SMove implements ISystem {
   public id = 'Move';
@@ -48,10 +49,26 @@ export class SMove implements ISystem {
     const orientation = entity.components.get(COrientation.id) as COrientation;
     const speed = entity.components.get(CSpeed.id) as CSpeed;
     const velocity = entity.components.get(CVelocity.id) as CVelocity;
-    velocity.value = new Vect2D(orientation.heading.x * speed.value, orientation.heading.y * speed.value);
+    const bouncing: CBouncing = entity.components.get(CBouncing.id) as CBouncing;
 
-    pos.value.x = pos.value.x + velocity.value.x * time;
-    pos.value.y = pos.value.y + velocity.value.y * time;
+    let posX = pos.value.x;
+    let posY = pos.value.y;
+    if (bouncing !== undefined) {
+      posX = posX + bouncing.velocity.x * time;
+      posY = posY + bouncing.velocity.y * time;
+    }
+    else {
+      velocity.value = new Vect2D(orientation.heading.x * speed.value, orientation.heading.y * speed.value);
+      posX = posX + velocity.value.x * time;
+      posY = posY + velocity.value.y * time;
+    }
+
+    if (time === 1.0) {
+      pos.value.x = posX;
+      pos.value.y = posY;
+    }
+    pos.temporaryValue.x = posX;
+    pos.temporaryValue.y = posY;
 
     ecs.addOrUpdateComponentOnEntity(entity, pos);
     ecs.addOrUpdateComponentOnEntity(entity, velocity);

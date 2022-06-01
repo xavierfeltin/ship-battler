@@ -6,6 +6,7 @@ import { CRenderer } from '../components/CRenderer';
 import { IEntity } from '../IEntity';
 import { CPosition } from '../components/CPosition';
 import { GameEnityUniqId } from '../../GameEngine';
+import { CAsteroid } from '../components/CAsteroid';
 
 export class SBuildMap implements ISystem {
   public id = 'BuildMap';
@@ -16,20 +17,21 @@ export class SBuildMap implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
-    const entities = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
+    const ships = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id]);
+    const asteroids = ecs.selectEntitiesFromComponents([CAsteroid.id, CPosition.id]);
     const area = ecs.selectEntityFromId(GameEnityUniqId.Area)?.components.get(CRenderer.id) as CRenderer;
 
     const width = area.attr.width || 0;
     const height = area.attr.height || 0;
     const granularity = 20; // same as rigid body of a ship
 
-    for (let entity of entities) {
-        let map = this.buildMap(entity, entities, width, height, granularity);
+    for (let entity of ships) {
+        let map = this.buildMap(entity, ships, asteroids, width, height, granularity);
         ecs.addOrUpdateComponentOnEntity(entity, map);
     }
   }
 
-  private buildMap(entity: IEntity, ships: IEntity[], width: number, height: number, granularity: number): CMap {
+  private buildMap(entity: IEntity, ships: IEntity[], asteroids: IEntity[], width: number, height: number, granularity: number): CMap {
 
     let map = new CMap({
       width: width,
@@ -45,6 +47,13 @@ export class SBuildMap implements ISystem {
         weights.set(node.key(), 10);
       }
     }
+
+    for (let asteroid of asteroids) {
+      const asteroidPos = asteroid.components.get(CPosition.id) as CPosition;
+      const node = map.grid.getClosestNodeFromPosition(asteroidPos.value);
+      weights.set(node.key(), 100);
+    }
+
     map.grid.setConstraints(weights);
 
     return map;

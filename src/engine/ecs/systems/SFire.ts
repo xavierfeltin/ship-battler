@@ -48,7 +48,7 @@ export class SFire implements ISystem {
 
         let components = new Map<string, IComponent>();
         components.set(CMissile.id, new CMissile(action.originId));
-        components.set(CRigidBody.id, new CRigidBody(5));
+        components.set(CRigidBody.id, new CRigidBody(5, 1));
         components.set(CSpeed.id, new CSpeed(speed));
         components.set(CPosition.id, new CPosition(action.originPos));
         components.set(COrientation.id, new COrientation(action.angle));

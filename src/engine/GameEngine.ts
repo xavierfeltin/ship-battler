@@ -217,7 +217,21 @@ export class GameEngine {
         components.set(CDomain.id, new CDomain(new ShipDomain(shipDomainTemplate)));
 
         components.set(CPlanner.id, new CPlanner<typeof ShipDomain>());
-        components.set(CRigidBody.id, new CRigidBody(20));
+
+        switch(config.role) {
+            case ShipRole.Hunting:
+                components.set(CRigidBody.id, new CRigidBody(22, 10));
+                break;
+            case ShipRole.Blocking:
+                components.set(CRigidBody.id, new CRigidBody(25, 10));
+                break;
+            case ShipRole.Mining:
+                components.set(CRigidBody.id, new CRigidBody(27, 10));
+                break;
+            default:
+                components.set(CRigidBody.id, new CRigidBody(20, 10));
+        }
+
         components.set(CSpeed.id, new CSpeed(config.speed));
         components.set(CPosition.id, new CPosition(config.position));
         components.set(COrientation.id, new COrientation(0));
@@ -254,14 +268,14 @@ export class GameEngine {
         });
 
         this.addAsteroid({
-            position: new Vect2D(100, 100)
+            position: new Vect2D(200, 200)
         });
     }
 
     private addAsteroid(config: AsteroidConfiguration) {
         let components = new Map<string, IComponent>();
         components.set(CAsteroid.id, new CAsteroid());
-        components.set(CRigidBody.id, new CRigidBody(20));
+        components.set(CRigidBody.id, new CRigidBody(22, 10));
         components.set(CPosition.id, new CPosition(config.position));
         components.set(CLife.id, new CLife(200));
         components.set(CRenderer.id, new CRenderer({

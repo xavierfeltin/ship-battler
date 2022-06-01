@@ -11,6 +11,7 @@ import { CShip } from '../components/CShip';
 import { CMissile } from '../components/CMissile';
 import { CIgnore } from '../components/CIgnore';
 import { Vect2D } from '../../utils/Vect2D';
+import { CAsteroid } from '../components/CAsteroid';
 
 export class SDetectCollisions implements ISystem {
   public id = 'DetectCollisions';
@@ -23,6 +24,7 @@ export class SDetectCollisions implements ISystem {
     onUpdate(ecs: ECSManager): void {
         const ships = ecs.selectEntitiesFromComponents([CShip.id, CRigidBody.id, CPosition.id, CVelocity.id], [CIgnore.id]);
         const missiles = ecs.selectEntitiesFromComponents([CMissile.id, CRigidBody.id, CPosition.id, CVelocity.id], [CIgnore.id]);
+        const asteroids = ecs.selectEntitiesFromComponents([CAsteroid.id, CRigidBody.id, CPosition.id]);
 
         const entityCollision = ecs.selectEntityFromId(GameEnityUniqId.Collisions);
         const entityTimeFrame = ecs.selectEntityFromId(GameEnityUniqId.TimeFrame);
@@ -45,6 +47,34 @@ export class SDetectCollisions implements ISystem {
             const posA = shipEntity.components.get('Position') as CPosition;
             const velA = shipEntity.components.get('Velocity') as CVelocity;
 
+            // collisions with asteroids
+            for (let asteroidEntity of asteroids) {
+                const rbB: CRigidBody = asteroidEntity.components.get('RigidBody') as CRigidBody;
+                const posB: CPosition = asteroidEntity.components.get('Position') as CPosition;
+                const velB: Vect2D = new Vect2D(0, 0);
+
+                let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, asteroidEntity.name, previousCollision.collisions);
+                if(this.isCollisionBetweenStaticElements(velA.value, velB)) {
+                    break;
+                }
+
+                // Do not detect collision when a missile is colliding with its the ship is originated from
+                if (this.isCollisionEligible(shipEntity.name, asteroidEntity.name, alreadyCollidedThisFrame)) {
+                    firstCollision = this.detectNewFirstCollision(
+                        shipEntity.name,
+                        posA.temporaryValue,
+                        velA.value,
+                        rbA.radius,
+                        asteroidEntity.name,
+                        posB.value,
+                        velB,
+                        rbB.radius,
+                        firstCollision,
+                        timeFrame.time,
+                        COLLISION_TYPE.ShipAsteroid);
+                }
+            }
+
             // Collision with ships
             for (let otherShipEntity of ships) {
                 const rbB: CRigidBody = otherShipEntity.components.get('RigidBody') as CRigidBody;
@@ -60,11 +90,11 @@ export class SDetectCollisions implements ISystem {
                 if (this.isCollisionEligible(shipEntity.name, otherShipEntity.name, alreadyCollidedThisFrame)) {
                     firstCollision = this.detectNewFirstCollision(
                         shipEntity.name,
-                        posA.value,
+                        posA.temporaryValue,
                         velA.value,
                         rbA.radius,
                         otherShipEntity.name,
-                        posB.value,
+                        posB.temporaryValue,
                         velB.value,
                         rbB.radius,
                         firstCollision,
@@ -89,11 +119,11 @@ export class SDetectCollisions implements ISystem {
                 if (this.isCollisionEligible(shipEntity.name, missile.shipId, alreadyCollidedThisFrame)) {
                     firstCollision = this.detectNewFirstCollision(
                         shipEntity.name,
-                        posA.value,
+                        posA.temporaryValue,
                         velA.value,
                         rbA.radius,
                         missileEntity.name,
-                        posB.value,
+                        posB.temporaryValue,
                         velB.value,
                         rbB.radius,
                         firstCollision,

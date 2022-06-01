@@ -12,7 +12,17 @@ export class CRigidBody implements IComponent {
         this._radius = value;
     }
 
-  public constructor(radius: number) {
+  private _mass: number;
+    public get mass(): number {
+      return this._mass;
+    }
+    public set mass(value: number) {
+      this._mass = value;
+    }
+
+
+  public constructor(radius: number, mass: number) {
       this._radius = radius;
+      this._mass = mass;
   }
 }

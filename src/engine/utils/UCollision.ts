@@ -2,7 +2,8 @@ import { Vect2D } from "./Vect2D";
 
 export enum COLLISION_TYPE {
     ShipShip,
-    ShipMissile
+    ShipMissile,
+    ShipAsteroid
 };
 
 export interface Collision {

@@ -11,6 +11,7 @@ import { CMissile } from '../components/CMissile';
 import { CIgnore } from '../components/CIgnore';
 import { CTarget } from '../components/CTarget';
 import { CShipSensor } from '../components/CShipSensor';
+import { CBouncing } from '../components/CBouncing';
 
 export class SFinalizeFrame implements ISystem {
   public id = 'FinalizeFrame';
@@ -66,6 +67,17 @@ export class SFinalizeFrame implements ISystem {
     const turn = ship.components.get(CActionTurn.id) as CActionTurn;
     if (turn !== undefined)
       ecs.removeComponentOnEntity(ship, turn);
+
+    const bounce = ship.components.get(CBouncing.id) as CBouncing;
+    if (bounce !== undefined)
+    {
+      if (bounce.isOver()) {
+        ecs.removeComponentOnEntity(ship, bounce);
+      }
+      else {
+        bounce.decrement();
+      }
+    }
 
     const map = ship.components.get(CMap.id) as CMap;
     if (map !== undefined)
