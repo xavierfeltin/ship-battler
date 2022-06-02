@@ -54,7 +54,7 @@ export class SBounce implements ISystem {
       distance2 = 1; // neutral element for division later
     }
 
-    const speedVector = Vect2D.sub(collision.velB, collision.velA);
+    let speedVector = Vect2D.sub(collision.velB, collision.velA);
 
     //fx and fy are the components of the impact vector. product is just there for optimisation purposes
     const product = speedVector.x * vectDistance.x + speedVector.y * vectDistance.y;
@@ -74,7 +74,7 @@ export class SBounce implements ISystem {
       impulse = 1;
     }
 
-    const minImpulseForce = 40.0; // decided through experience
+    const minImpulseForce = 20.0; // decided through experience
     if (impulse < minImpulseForce) {
       fx = (fx * minImpulseForce) / impulse;
       fy = (fy * minImpulseForce) / impulse;

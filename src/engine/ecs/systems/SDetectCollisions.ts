@@ -54,9 +54,11 @@ export class SDetectCollisions implements ISystem {
                 const velB: Vect2D = new Vect2D(0, 0);
 
                 let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, asteroidEntity.name, previousCollision.collisions);
+                /*
                 if(this.isCollisionBetweenStaticElements(velA.value, velB)) {
                     break;
                 }
+                */
 
                 // Do not detect collision when a missile is colliding with its the ship is originated from
                 if (this.isCollisionEligible(shipEntity.name, asteroidEntity.name, alreadyCollidedThisFrame)) {
@@ -82,9 +84,11 @@ export class SDetectCollisions implements ISystem {
                 const velB: CVelocity = otherShipEntity.components.get('Velocity') as CVelocity;
 
                 let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, otherShipEntity.name, previousCollision.collisions);
+                /*
                 if(this.isCollisionBetweenStaticElements(velA.value, velB.value)) {
                     break;
                 }
+                */
 
                 // Do not detect collision with itself
                 if (this.isCollisionEligible(shipEntity.name, otherShipEntity.name, alreadyCollidedThisFrame)) {
@@ -111,9 +115,12 @@ export class SDetectCollisions implements ISystem {
                 const missile: CMissile = missileEntity.components.get('Missile') as CMissile;
 
                 let alreadyCollidedThisFrame = this.hasAlreayCollidedThisFrame(shipEntity.name, missileEntity.name, previousCollision.collisions);
+                /*
+
                 if(this.isCollisionBetweenStaticElements(velA.value, velB.value)) {
                     break;
                 }
+                */
 
                 // Do not detect collision when a missile is colliding with its the ship is originated from
                 if (this.isCollisionEligible(shipEntity.name, missile.shipId, alreadyCollidedThisFrame)) {
@@ -186,6 +193,7 @@ export class SDetectCollisions implements ISystem {
             radiusA, radiusB,
             firstCollision,
             type);
+
 
         // If the collision happens earlier than the current one we keep it
         const collisionTime = newCollision.collisionTime + time;

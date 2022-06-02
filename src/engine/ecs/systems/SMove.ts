@@ -54,21 +54,23 @@ export class SMove implements ISystem {
     let posX = pos.value.x;
     let posY = pos.value.y;
     if (bouncing !== undefined) {
-      posX = posX + bouncing.velocity.x * time;
-      posY = posY + bouncing.velocity.y * time;
+      velocity.value = new Vect2D(bouncing.velocity.x, bouncing.velocity.y);
     }
     else {
       velocity.value = new Vect2D(orientation.heading.x * speed.value, orientation.heading.y * speed.value);
-      posX = posX + velocity.value.x * time;
-      posY = posY + velocity.value.y * time;
     }
 
+    posX = posX + velocity.value.x * time;
+    posY = posY + velocity.value.y * time;
+
+    pos.temporaryValue.x = posX;
+    pos.temporaryValue.y = posY;
+
     if (time === 1.0) {
+      // Save last computed position as the official new position at the end of the frame
       pos.value.x = posX;
       pos.value.y = posY;
     }
-    pos.temporaryValue.x = posX;
-    pos.temporaryValue.y = posY;
 
     ecs.addOrUpdateComponentOnEntity(entity, pos);
     ecs.addOrUpdateComponentOnEntity(entity, velocity);
