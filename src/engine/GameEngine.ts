@@ -351,10 +351,10 @@ export class GameEngine {
 
     private addPhysics() {
         this.ecs.addSystem("DetectCollisions", new SDetectCollisions(0), ESystems.PHYSICS);
-        this.ecs.addSystem("Damage", new SDamage(1), ESystems.PHYSICS);
-        this.ecs.addSystem("Bounce", new SBounce(2), ESystems.PHYSICS);
-        this.ecs.addSystem("Orientate", new SOrientate(3), ESystems.PHYSICS);
-        this.ecs.addSystem("Move", new SMove(4), ESystems.PHYSICS);
+        this.ecs.addSystem("Orientate", new SOrientate(1), ESystems.PHYSICS);
+        this.ecs.addSystem("Move", new SMove(2), ESystems.PHYSICS);
+        this.ecs.addSystem("Damage", new SDamage(3), ESystems.PHYSICS);
+        this.ecs.addSystem("Bounce", new SBounce(4), ESystems.PHYSICS);
         this.ecs.addSystem("FinalizePhysics", new SFinalizePhysicsUpdate(5), ESystems.PHYSICS);
     }
 
