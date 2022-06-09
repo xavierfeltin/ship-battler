@@ -12,6 +12,8 @@ import { CIgnore } from '../components/CIgnore';
 import { CTarget } from '../components/CTarget';
 import { CShipSensor } from '../components/CShipSensor';
 import { CBouncing } from '../components/CBouncing';
+import { CTimeFrame } from '../components/CTimeFrame';
+import { time } from 'console';
 
 export class SFinalizeFrame implements ISystem {
   public id = 'FinalizeFrame';
@@ -25,6 +27,7 @@ export class SFinalizeFrame implements ISystem {
     this.finalizeShips(ecs);
     this.finalizeMissiles(ecs);
     this.finalizeCollisions(ecs);
+    this.finalizeFrame(ecs);
   }
 
   private finalizeShips(ecs: ECSManager) {
@@ -118,10 +121,20 @@ export class SFinalizeFrame implements ISystem {
         ecs.removeEntity(missile.name);
     }
   }
+
   private destroyShip(ship: IEntity, ecs: ECSManager): void {
     const isDead = ship.components.get(CIgnore.id) as CIgnore;
     if (isDead !== undefined) {
       ecs.removeEntity(ship.name);
+    }
+  }
+
+  private finalizeFrame(ecs: ECSManager): void {
+    let timeFrameEntity = ecs.selectEntityFromId(GameEnityUniqId.TimeFrame);
+    if (timeFrameEntity !== undefined) {
+      let timeFrame = timeFrameEntity.components.get(CTimeFrame.id) as CTimeFrame;
+      timeFrame.frame = timeFrame.frame + 1;
+      ecs.addOrUpdateComponentOnEntity(timeFrameEntity, timeFrame);
     }
   }
 }

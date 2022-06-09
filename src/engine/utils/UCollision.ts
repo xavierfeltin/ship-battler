@@ -88,15 +88,20 @@ export class CollisionHelper {
         // Collision is not possible if ships are going in opposite directions
         let collision: Collision = CollisionHelper.createEmptyCollision();
 
-        if ((posA.x < posB.x && velA.x < 0.0 && velB.x > 0.0)
+        const distanceToOther = posA.distance2(posB);
+        const radii = (radiusA + radiusB);
+        const radiiSquared = radii * radii;
+
+        if (((posA.x < posB.x && velA.x < 0.0 && velB.x > 0.0)
             || (posB.x < posA.x && velB.x < 0.0 && velA.x > 0.0)
             || (posA.y < posB.y && velA.y < 0.0 && velB.y > 0.0)
-            || (posB.y < posA.y && velB.y < 0.0 && velA.y > 0.0)) {
+            || (posB.y < posA.y && velB.y < 0.0 && velA.y > 0.0)) && distanceToOther > radiiSquared) {
             collision = CollisionHelper.createEmptyCollision();
         }
         else {
             collision = CollisionHelper.getCollsion(idA, idB, posB, posA, velB, velA, radiusB, radiusA, type);
         }
+
 
         if (!CollisionHelper.isCollisionEmpty(collision)) {
             if (!CollisionHelper.isCollisionEmpty(previousCollision)
@@ -131,9 +136,11 @@ export class CollisionHelper {
             return CollisionHelper.createEmptyCollision();
         }
 
+        /*
         if (distanceToOther > 100) {
             return CollisionHelper.createEmptyCollision();
         }
+        */
 
         // Set other unit as the new reference (other is stationary and is positionned at (0, 0)
         const vObjARef = Vect2D.sub(posA, posB);

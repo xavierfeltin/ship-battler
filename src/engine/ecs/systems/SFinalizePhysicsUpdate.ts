@@ -26,7 +26,7 @@ export class SFinalizePhysicsUpdate implements ISystem {
 
     const previousCollisions = previousCollisionsEntity.components.get('Collisions') as CCollisions;
     const collisions = collisionsEntity.components.get('Collisions') as CCollisions;
-    previousCollisions.collisions = [...collisions.collisions];
+    previousCollisions.collisions = previousCollisions.collisions.concat(...collisions.collisions);
     ecs.addOrUpdateComponentOnEntity(previousCollisionsEntity, previousCollisions);
 
     // Reset current collisions for next time increment

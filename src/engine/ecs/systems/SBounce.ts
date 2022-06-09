@@ -7,6 +7,8 @@ import { IEntity } from '../IEntity';
 import { Vect2D } from '../../utils/Vect2D';
 import { CBouncing } from '../components/CBouncing';
 import { CRigidBody } from '../components/CRigidBody';
+import { CPosition } from '../components/CPosition';
+import { CVelocity } from '../components/CVelocity';
 
 export class SBounce implements ISystem {
   public id = 'Bounce';
@@ -38,6 +40,7 @@ export class SBounce implements ISystem {
 
         // Solve bouncing collision between A and B
         this.bounce(entityA, entityB, collision, ecs);
+        //this.bounceWikipedia(entityA, entityB, collision, ecs);
     }
   }
 
@@ -48,8 +51,17 @@ export class SBounce implements ISystem {
     const rbB = entityB.components.get(CRigidBody.id) as CRigidBody;
 
     const massCoefficient = (rbA.mass + rbB.mass) / (rbA.mass * rbB.mass);
+
+    /*
     const vectDistance = Vect2D.sub(collision.posA, collision.posB);
     let distance2 = collision.posA.distance2(collision.posB);
+    */
+
+    const posA = entityA.components.get(CPosition.id) as CPosition;
+    const posB = entityB.components.get(CPosition.id) as CPosition;
+    const vectDistance = Vect2D.sub(posA.temporaryValue, posB.temporaryValue);
+    let distance2 = posA.temporaryValue.distance2(posB.temporaryValue);
+
     if (distance2 === 0) {
       distance2 = 1; // neutral element for division later
     }
@@ -87,7 +99,7 @@ export class SBounce implements ISystem {
     impactB = new Vect2D(fx / rbB.mass, fy / rbB.mass);
     velB = Vect2D.add(velB, impactB);
 
-    const bouncingDurationInFrames = 3; // decided through experience
+    const bouncingDurationInFrames = 1; // decided through experience
     const bouncingA = new CBouncing(velA, bouncingDurationInFrames);
     ecs.addOrUpdateComponentOnEntity(entityA, bouncingA);
 
