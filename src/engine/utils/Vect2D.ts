@@ -18,7 +18,7 @@ export class Vect2D {
     }
 
     public key(): string {
-        return this.x + "-" + this.y;
+        return this.x.toFixed(2) + "-" + this.y.toFixed(2);
     }
 
     public setV(v: Vect2D) {

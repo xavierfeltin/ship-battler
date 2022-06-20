@@ -75,20 +75,6 @@ export class SMine implements ISystem {
         }
     }
 
-    /*
-    private stopShipForMining(ship: IEntity, ecs: ECSManager): void {
-        const speed = ship.components.get(CSpeed.id) as CSpeed;
-        speed.stop();
-        ecs.addOrUpdateComponentOnEntity(ship, speed);
-    }
-
-    private restartShipAfterMining(ship: IEntity, ecs: ECSManager): void {
-        const speed = ship.components.get(CSpeed.id) as CSpeed;
-        speed.go();
-        ecs.addOrUpdateComponentOnEntity(ship, speed);
-    }
-    */
-
     private mineAsteroid(asteroid: IEntity, nbMiningShips: number, ecs: ECSManager): boolean {
         let life: CLife = asteroid.components.get(CLife.id) as CLife;
         if (life !== undefined) {

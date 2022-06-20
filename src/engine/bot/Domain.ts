@@ -34,4 +34,8 @@ export class Domain<T> {
     public getWorldState(): WorldState {
         return this.worldState;
     }
+
+    public resetTriggerEventsForlanning(): void {
+        return;
+    }
 }

@@ -17,7 +17,7 @@ export enum NAVMODE {
     INTERCEPTING,
     RANDOM
 };
-export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number}> extends Task<T> {
+export class TNavigateTo<T extends {isMoving: number; isInRange: number; hasTargetMoved: number}> extends Task<T> {
     public static id: string = "GoTo";
     public id: string = TNavigateTo.id;
 
@@ -28,10 +28,14 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
         this.navMode = mode;
     }
 
+    public isNeedingReplanify(worldState: WorldState): boolean {
+        const hasTargetMoved: boolean = worldState.getState(this.indexes.hasTargetMoved) === 1;
+        return hasTargetMoved;
+    }
+
     public canBeRun(worldState: WorldState): boolean {
         // For now always can navigate to some place even if already on movement
-        const isTargetHasMoved: boolean = worldState.getState(this.indexes.isTargetHasMoved) === 0;
-        return isTargetHasMoved;
+        return true;
     }
 
     public applyEffects(worldState: WorldState): WorldState {
@@ -43,18 +47,18 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
     public operate(agent: IEntity): IComponent[] {
         let navAction: CNavigation | undefined = agent.components.get(CNavigation.id) as CNavigation;
         if (navAction !== undefined && !navAction.isNavigationOver()) {
-            console.log("[NavigateTo] navigation action is underway");
+            console.log("[NavigateTo] " + agent.name + " navigation action is underway");
             return [navAction];
         }
         else if (navAction === undefined && this.state === IAActionState.ONGOING) {
-            console.log("[NavigateTo] final destination has been reached");
+            console.log("[NavigateTo] " + agent.name + " final destination has been reached");
             this.state = IAActionState.DONE;
             return [];
         }
         else {
-            console.log("[NavigateTo] start a new navigation");
             this.state = IAActionState.ONGOING;
             const destination = this.selectDestination(agent);
+            console.log("[NavigateTo] " + agent.name + " start a new navigation to " + destination.to.key());
             navAction = new CNavigation(destination.to, destination.stopAtDistance);
             return [navAction];
         }
@@ -73,7 +77,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
             case NAVMODE.AGRESSIVE:
                 if (shipSensor !== undefined && shipSensor.mainDetectedPos !== undefined) {
                     destination.to = shipSensor.mainDetectedPos;
-                    console.log("Follow ship target " + shipSensor.mainDetectedShipId);
+                    console.log("Ship " + agent.name + " follows ship target " + shipSensor.mainDetectedShipId + " at " + destination.to.key());
 
                     if (shipInfo !== undefined) {
                         destination.stopAtDistance = shipInfo.shootingDistance;
@@ -83,7 +87,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
             case NAVMODE.MINING:
                 if (asteroidSensor !== undefined && asteroidSensor.detectedPos !== undefined) {
                     destination.to = asteroidSensor.detectedPos;
-                    console.log("Follow asteroid target " + asteroidSensor.detectedAsteroidId);
+                    console.log("Ship " + agent.name + " follows asteroid target " + asteroidSensor.detectedAsteroidId);
 
                     if (shipInfo !== undefined) {
                         destination.stopAtDistance = shipInfo.miningDistance;
@@ -93,7 +97,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
             case NAVMODE.PROTECTING:
                 if (shipSensor !== undefined && shipSensor.mainDetectedPos !== undefined) {
                     destination.to = shipSensor.mainDetectedPos;
-                    console.log("Follow ship to protect " + shipSensor.mainDetectedShipId);
+                    console.log("Ship " + agent.name + " follows ship to protect " + shipSensor.mainDetectedShipId);
 
                     if (shipInfo !== undefined) {
                         destination.stopAtDistance = shipInfo.protectingDistance;
@@ -107,7 +111,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
                     agressionVector.mul(shipInfo.protectingDistance);
                     const interceptionPoint = Vect2D.add(shipSensor.mainDetectedPos, agressionVector);
                     destination.to = interceptionPoint;
-                    console.log("Intercept menace " + shipSensor.secondaryDetectedShipId + " at " + interceptionPoint.key());
+                    console.log("Ship " + agent.name + " intercepts menace " + shipSensor.secondaryDetectedShipId + " at " + interceptionPoint.key());
 
                     const rigidBody = agent.components.get(CRigidBody.id) as CRigidBody;
                     if (rigidBody !== undefined) {
@@ -125,7 +129,7 @@ export class TNavigateTo<T extends {isMoving: number; isInRange: number; isTarge
                     destY = Math.max(rigidBody.radius, Math.min(destY, 800 - rigidBody.radius));
                     destination.to = new Vect2D(destX, destY);
                     destination.stopAtDistance = rigidBody.radius;
-                    console.log("Go to random place " + destX + " - " + destY);
+                    console.log("Ship " + agent.name + " goes to random place " + destX + " - " + destY);
                 }
         }
         return destination;

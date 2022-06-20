@@ -18,6 +18,10 @@ export class Task<T> {
         this.indexes = indexes;
     }
 
+    public isNeedingReplanify(worldState: WorldState): boolean {
+        return !this.canBeRun(worldState);
+    }
+
     public canBeRun(worldState: WorldState): boolean {
         let couldRun = true;
         return couldRun;

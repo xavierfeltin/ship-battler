@@ -86,9 +86,11 @@ export class SFinalizeFrame implements ISystem {
     if (map !== undefined)
       ecs.removeComponentOnEntity(ship, map);
 
+    /*
     const target = ship.components.get(CTarget.id) as CTarget;
       if (target !== undefined)
         ecs.removeComponentOnEntity(ship, target);
+    */
   }
 
   // Reset collision history for the new frame

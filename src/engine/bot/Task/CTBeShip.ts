@@ -6,7 +6,7 @@ import { WorldState } from "../WorldState";
 import { CTMineAsteroid } from "./CTMineAsteroid";
 import { CTProtect } from "./CTProtect";
 
-export class CTBeShip<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; hasShipToProtect: number; hasFoundMenaceOnProtectedShip: number; isMining: number; isReadyToFire: number}> extends CompoundTask<T> {
+export class CTBeShip<T extends {isMoving: number; isInRange: number; hasTargetMoved: number; hasEnnemyToAttack: number; hasAsteroidToMine: number; hasShipToProtect: number; hasFoundMenaceOnProtectedShip: number; isMining: number; isReadyToFire: number}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];

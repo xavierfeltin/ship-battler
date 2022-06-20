@@ -76,6 +76,7 @@ export class SDetectShip implements ISystem {
         let sensor = shipEntity.components.get(CShipSensor.id) as CShipSensor;
 
         if (sensor.isOperational()) {
+          sensor.resetSensorInformation();
           sensor.activate();
         }
         else {
@@ -109,7 +110,7 @@ export class SDetectShip implements ISystem {
   }
 
   private getSensorInformationOnGroup(position: CPosition, groupsEntity: IEntity[][]): {position: Vect2D | undefined, id: string} {
-    let closest = undefined;
+    let closest: IEntity | undefined = undefined;
     let index = 0;
     while (closest === undefined && index < groupsEntity.length) {
       closest = this.getClosestInGroupFromPosition(position, groupsEntity[index]);

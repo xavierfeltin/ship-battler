@@ -47,4 +47,12 @@ export class CShipSensor extends CPartialActionWithCooldown implements IComponen
     this._secondaryDetectedShipId = "";
     this._secondaryDetectedShipPos = undefined;
   }
+
+  public resetSensorInformation(): void {
+    this._mainDetectedShipId = "";
+    this._mainDetectedShipPos = undefined;
+
+    this._secondaryDetectedShipId = "";
+    this._secondaryDetectedShipPos = undefined;
+  }
 }

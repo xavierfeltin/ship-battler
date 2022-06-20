@@ -33,7 +33,7 @@ export class SNavigate implements ISystem {
         const nav = entity.components.get(CNavigation.id) as CNavigation;
         const from = entity.components.get(CPosition.id) as CPosition;
 
-        if (nav.isNewNavigation()) {
+        if (nav.isNewNavigation() && !this.isFinalDestinationHasBeenReached(from, nav)) {
             const path = this.computePath(map, from, nav);
             nav.attachPath(path);
         }
@@ -66,25 +66,32 @@ export class SNavigate implements ISystem {
 
     private navigate(entity: IEntity, ecs: ECSManager): void {
         const nav = entity.components.get(CNavigation.id) as CNavigation;
-        const from = entity.components.get(CPosition.id) as CPosition;
-        const orientation = entity.components.get(COrientation.id) as COrientation;
+        //const from = entity.components.get(CPosition.id) as CPosition;
+        //const orientation = entity.components.get(COrientation.id) as COrientation;
         const speed =  entity.components.get(CSpeed.id) as CSpeed;
 
         const navSpeed = new CSpeed(speed.maxValue);
+        this.faceDestination(entity, ecs);
         if (nav.isNavigationOver()) {
             navSpeed.value = 0; // no more waypoint to go to, stop moving
             ecs.addOrUpdateComponentOnEntity(entity, navSpeed);
             ecs.removeComponentOnEntity(entity, nav);
         }
         else {
-            const trajectory = nav.currentWayPoint !== undefined ? Vect2D.sub(nav.currentWayPoint, from.value) : new Vect2D(0, 0);
-            const rotationAngleInRadian = orientation.heading.angleWithVector(trajectory);
-            const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
-            const pilotingAction = new CActionTurn(rotationAngleInDegree);
-
-           // console.log("From: " + from.key() + ", To: " + to.key() + ", " + trajectory.key() + ", heading: " + heading.key() + ", rotation: " + rotationAngleInDegree);
            ecs.addOrUpdateComponentOnEntity(entity, navSpeed);
-           ecs.addOrUpdateComponentOnEntity(entity, pilotingAction);
         }
+    }
+
+    private faceDestination(entity: IEntity, ecs: ECSManager): void {
+        const nav = entity.components.get(CNavigation.id) as CNavigation;
+        const from = entity.components.get(CPosition.id) as CPosition;
+        const orientation = entity.components.get(COrientation.id) as COrientation;
+
+        const trajectory = nav.currentWayPoint !== undefined ? Vect2D.sub(nav.currentWayPoint, from.value) : Vect2D.sub(nav.destination, from.value);
+        console.log(trajectory);
+        const rotationAngleInRadian = orientation.heading.angleWithVector(trajectory);
+        const rotationAngleInDegree = MyMath.radianToDegree(rotationAngleInRadian);
+        const pilotingAction = new CActionTurn(rotationAngleInDegree);
+        ecs.addOrUpdateComponentOnEntity(entity, pilotingAction);
     }
 }

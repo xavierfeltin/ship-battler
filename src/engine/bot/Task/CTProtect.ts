@@ -3,7 +3,7 @@ import { NAVMODE, TNavigateTo } from "./TNavigateTo";
 import { Method } from "./Method";
 import { WorldState } from "../WorldState";
 
-export class CTProtect<T extends {isMoving: number; isInRange: number; isTargetHasMoved: number; hasShipToProtect: number; hasFoundMenaceOnProtectedShip: number}> extends CompoundTask<T> {
+export class CTProtect<T extends {isMoving: number; isInRange: number; hasTargetMoved: number; hasShipToProtect: number; hasFoundMenaceOnProtectedShip: number}> extends CompoundTask<T> {
     public constructor(indexes: T) {
         super();
         this.methods = [];

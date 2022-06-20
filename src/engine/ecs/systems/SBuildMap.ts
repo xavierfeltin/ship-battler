@@ -7,6 +7,8 @@ import { IEntity } from '../IEntity';
 import { CPosition } from '../components/CPosition';
 import { GameEnityUniqId } from '../../GameEngine';
 import { CAsteroid } from '../components/CAsteroid';
+import { Vect2D } from '../../utils/Vect2D';
+import { CRigidBody } from '../components/CRigidBody';
 
 export class SBuildMap implements ISystem {
   public id = 'BuildMap';
@@ -40,18 +42,42 @@ export class SBuildMap implements ISystem {
     });
 
     let weights = new Map<string, number>();
+    let radiusPoints: Vect2D[] = [
+      new Vect2D(0,0),
+      new Vect2D(-1,0),
+      new Vect2D(1,0),
+      new Vect2D(0,-1),
+      new Vect2D(0,1),
+      new Vect2D(-1,-1),
+      new Vect2D(-1,1),
+      new Vect2D(1,-1),
+      new Vect2D(1,1)
+    ];
+
     for (let ship of ships) {
       if (ship.name !== entity.name) {
         const shipPos = ship.components.get(CPosition.id) as CPosition;
-        const node = map.grid.getClosestNodeFromPosition(shipPos.value);
-        weights.set(node.key(), 10);
+        const rb = ship.components.get(CRigidBody.id) as CRigidBody;
+        const radius = rb !== undefined ? rb.radius : 0;
+
+        for (let point of radiusPoints) {
+          const pos = new Vect2D(shipPos.value.x + point.x * radius, shipPos.value.y + point.y * radius);
+          const node = map.grid.getClosestNodeFromPosition(pos);
+          weights.set(node.key(), 1000);
+        }
       }
     }
 
     for (let asteroid of asteroids) {
       const asteroidPos = asteroid.components.get(CPosition.id) as CPosition;
-      const node = map.grid.getClosestNodeFromPosition(asteroidPos.value);
-      weights.set(node.key(), 100);
+      const rb = asteroid.components.get(CRigidBody.id) as CRigidBody;
+      const radius = rb !== undefined ? rb.radius : 0;
+
+      for (let point of radiusPoints) {
+        const pos = new Vect2D(asteroidPos.value.x + point.x * radius, asteroidPos.value.y + point.y * radius);
+        const node = map.grid.getClosestNodeFromPosition(pos);
+        weights.set(node.key(), 1000);
+      }
     }
 
     map.grid.setConstraints(weights);

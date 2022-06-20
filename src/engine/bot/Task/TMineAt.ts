@@ -16,6 +16,7 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
         this.minedAsteroidID = "";
     }
 
+
     public canBeRun(worldState: WorldState): boolean {
         const hasAsteroidToMine: boolean = worldState.getState(this.indexes.hasAsteroidToMine) === 1;
         const isInMiningRange = worldState.getState(this.indexes.isInRange) === 1;
@@ -30,7 +31,7 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
     public operate(agent: IEntity): IComponent[] {
         let miningAction: CActionMine | undefined = agent.components.get(CActionMine.id) as CActionMine;
         if (miningAction !== undefined) {
-            console.log("[MineAT] mining action is underway");
+            console.log("[MineAT] " + agent.name + " mining action is underway");
             //keep mining current asteroid
             return [miningAction];
         }
@@ -39,7 +40,7 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
             // Start mining a new asteroid if detected
             const asteroidSensor: CAsteroidSensor = agent.components.get(CAsteroidSensor.id) as CAsteroidSensor;
             if (asteroidSensor && asteroidSensor.detectedPos !== undefined) {
-                console.log("[MineAT] start mining a new asteroid " + asteroidSensor.detectedAsteroidId);
+                console.log("[MineAT] " + agent.name + " start mining a new asteroid " + asteroidSensor.detectedAsteroidId);
                 this.minedAsteroidID = asteroidSensor.detectedAsteroidId;
                 const target = asteroidSensor.detectedPos;
                 const pos = agent.components.get(CPosition.id) as CPosition;
@@ -52,13 +53,13 @@ export class TMineAt<T extends {isInRange: number;  hasAsteroidToMine: number; i
             }
             else {
                 // no asteroid to mine
-                console.log("[MineAT] no asteroid to mine");
+                console.log("[MineAT] " + agent.name + " no asteroid to mine");
                 return [];
             }
         }
         else {
             // The last mining is over
-            console.log("[MineAT] mining of asteroid" + this.minedAsteroidID + " is now done");
+            console.log("[MineAT] " + agent.name + " mining of asteroid" + this.minedAsteroidID + " is now done");
             this.minedAsteroidID = "";
             this.state = IAActionState.DONE;
             return [];

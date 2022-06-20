@@ -10,7 +10,7 @@ import { CActionMine } from '../components/CActionMine';
 import { CCannon } from '../components/CCannon';
 import { ShipRole } from '../../GameEngine';
 import { CIgnore } from '../components/CIgnore';
-import { CTarget } from '../components/CTarget';
+import { CNavigation } from '../components/CNavigation';
 
 export class SBuildShipDomain implements ISystem {
   public id = 'BuildShipDomain';
@@ -25,9 +25,9 @@ export class SBuildShipDomain implements ISystem {
     for (let shipEntity of entities) {
         let ship = shipEntity.components.get(CShip.id) as CShip;
         let cDomain = shipEntity.components.get(CDomain.id) as CDomain<{
-          isMoving: number,
+          isMoving: number;
           isInRange: number,
-          isTargetHasMoved: number;
+          hasTargetMoved: number;
           hasEnnemyToAttack: number,
           hasAsteroidToMine: number,
           isMining: number,
@@ -35,6 +35,8 @@ export class SBuildShipDomain implements ISystem {
           hasShipToProtect: number,
           hasFoundMenaceOnProtectedShip: number
         }>;
+
+        this.initDomain(cDomain);
 
         switch(ship.role) {
           case ShipRole.Hunting:
@@ -51,17 +53,29 @@ export class SBuildShipDomain implements ISystem {
     }
   }
 
-  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: number, isInRange: number, isTargetHasMoved: number, hasEnnemyToAttack: number, isReadyToFire: number}>): void {
+  private initDomain(domain: CDomain<{isMoving: number, isInRange: number, hasTargetMoved: number, hasEnnemyToAttack: number, hasAsteroidToMine: number, isMining: number, isReadyToFire: number, hasShipToProtect: number, hasFoundMenaceOnProtectedShip: number}>) {
+    domain.domain.updateWorldState(domain.domain.indexes.isMoving, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.isInRange, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.hasTargetMoved, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.hasEnnemyToAttack, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.hasAsteroidToMine, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.isMining, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.isReadyToFire, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.hasShipToProtect, 0);
+    domain.domain.updateWorldState(domain.domain.indexes.hasFoundMenaceOnProtectedShip, 0);
+  }
+
+  private updateAttackInformation(ship: IEntity, domain: CDomain<{isMoving: number, isInRange: number, hasTargetMoved: number, hasEnnemyToAttack: number, isReadyToFire: number}>): void {
     let targetPos = ship.components.get(CShipSensor.id) as CShipSensor;
     let shipInfo = ship.components.get(CShip.id) as CShip;
-    let oldTarget = ship.components.get(CTarget.id) as CTarget;
+    let navTarget = ship.components.get(CNavigation.id) as CNavigation;
 
-    if (oldTarget !== undefined && targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
-      const isTargetHasMoved = targetPos.mainDetectedPos.eq(oldTarget.value) ? 0 : 1;
-      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, isTargetHasMoved);
+    if (navTarget !== undefined && targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {
+      const hasTargetMoved = targetPos.mainDetectedPos.distance2(navTarget.destination) < 10000 ? 0 : 1;
+      domain.domain.updateWorldState(domain.domain.indexes.hasTargetMoved, hasTargetMoved);
     }
     else {
-      domain.domain.updateWorldState(domain.domain.indexes.isTargetHasMoved, 0);
+      domain.domain.updateWorldState(domain.domain.indexes.hasTargetMoved, 0);
     }
 
     if (targetPos !== undefined && targetPos.mainDetectedPos !== undefined) {

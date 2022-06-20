@@ -41,14 +41,23 @@ export class Planner<T> {
             actionName = this.actionBeingSolved === undefined ? "undefined" : this.actionBeingSolved.info();
             console.log("[Planify] Start new action " + actionName);
         }
-        else if (!this.actionBeingSolved.canBeRun(domain.getWorldState())) {
-            console.log("[Planify] the current action " + this.actionBeingSolved.info() + " is can no longer be solved. Replanify");
-            this.buildPlanning(domain, agent);
-            this.actionBeingSolved = this.planning.pop();
-        }
+
         // else the current action is still being solved
         const nextActionsToPerformByAgent = this.solve(agent);
         return nextActionsToPerformByAgent;
+    }
+
+    public replanify(domain: Domain<T>, agent: IEntity) {
+        console.log("[Planify] the current action " + (this.actionBeingSolved === undefined ? "undefined" : this.actionBeingSolved.info()) + " is can no longer be solved. Replanify");
+        this.buildPlanning(domain, agent);
+        this.actionBeingSolved = this.planning.pop();
+
+        const nextActionsToPerformByAgent = this.solve(agent);
+        return nextActionsToPerformByAgent;
+    }
+
+    public isNeedingAReplanification(domain: Domain<T>): boolean {
+        return this.actionBeingSolved === undefined ? true : this.actionBeingSolved.isNeedingReplanify(domain.getWorldState());
     }
 
     private solve(agent: IEntity): IComponent[] {

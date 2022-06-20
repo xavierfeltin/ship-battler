@@ -212,7 +212,7 @@ export class GameEngine {
             isReadyToFire: 5,
             hasShipToProtect: 6,
             hasFoundMenaceOnProtectedShip: 7,
-            isTargetHasMoved: 8
+            hasTargetMoved: 8
         };
         components.set(CDomain.id, new CDomain(new ShipDomain(shipDomainTemplate)));
 
@@ -242,7 +242,7 @@ export class GameEngine {
         }
 
         if (config.hasShipSensor) {
-            components.set(CShipSensor.id, new CShipSensor(5));
+            components.set(CShipSensor.id, new CShipSensor(20));
         }
         if (config.hasCannons) {
             components.set(CCannon.id, new CCannon(15));
@@ -288,21 +288,29 @@ export class GameEngine {
     }
 
     private createTeam(team: Team, ecs: ECSManager): void {
-        const startPositions = [];
+        const startPositions: Vect2D[] = [];
         if (team === Team.TeamA) {
             startPositions.push(new Vect2D(100, 100));
-            startPositions.push(new Vect2D(100, 200));
-            startPositions.push(new Vect2D(100, 300));
+
+            this.createHunter(startPositions[0], team, ecs);
+            //startPositions.push(new Vect2D(100, 200));
+            //startPositions.push(new Vect2D(100, 300));
         }
         else {
             startPositions.push(new Vect2D(1100, 700));
             startPositions.push(new Vect2D(1100, 600));
             startPositions.push(new Vect2D(1100, 500));
+
+            this.createHunter(startPositions[0], team, ecs);
+            this.createMiner(startPositions[1], team, ecs);
+            this.createBlocker(startPositions[2], team, ecs);
         }
 
+        /*
         this.createHunter(startPositions[0], team, ecs);
         this.createMiner(startPositions[1], team, ecs);
         this.createBlocker(startPositions[2], team, ecs);
+        */
     }
 
     private createHunter(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
