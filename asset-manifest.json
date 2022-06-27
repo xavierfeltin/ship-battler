@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/ship-battler/static/css/main.073c9b0a.css",
-    "main.js": "/ship-battler/static/js/main.1eff36aa.js",
+    "main.js": "/ship-battler/static/js/main.783461d0.js",
     "static/js/787.757b6ae2.chunk.js": "/ship-battler/static/js/787.757b6ae2.chunk.js",
     "index.html": "/ship-battler/index.html",
     "main.073c9b0a.css.map": "/ship-battler/static/css/main.073c9b0a.css.map",
-    "main.1eff36aa.js.map": "/ship-battler/static/js/main.1eff36aa.js.map",
+    "main.783461d0.js.map": "/ship-battler/static/js/main.783461d0.js.map",
     "787.757b6ae2.chunk.js.map": "/ship-battler/static/js/787.757b6ae2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.1eff36aa.js"
+    "static/js/main.783461d0.js"
   ]
 }
