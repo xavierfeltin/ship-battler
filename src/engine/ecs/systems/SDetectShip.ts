@@ -8,6 +8,8 @@ import { IEntity } from '../IEntity';
 import { ShipRole, Team } from '../../GameEngine';
 import { Vect2D } from '../../utils/Vect2D';
 import { CIgnore } from '../components/CIgnore';
+import { IFieldOfView, MyMath } from '../../utils/MyMath';
+import { COrientation } from '../components/COrientation';
 
 export class SDetectShip implements ISystem {
   public id = 'DetectShip';
@@ -18,7 +20,7 @@ export class SDetectShip implements ISystem {
     }
 
   public onUpdate(ecs: ECSManager): void {
-    const shipEntities = ecs.selectEntitiesFromComponents([CShip.id, CShipSensor.id, CPosition.id, CDomain.id], [CIgnore.id]);
+    const shipEntities = ecs.selectEntitiesFromComponents([CShip.id, CShipSensor.id, CPosition.id, COrientation.id, CDomain.id], [CIgnore.id]);
     const targetShips = ecs.selectEntitiesFromComponents([CShip.id, CPosition.id], [CIgnore.id]);
 
     // No ship is able to attack
@@ -34,7 +36,7 @@ export class SDetectShip implements ISystem {
       });
 
       if (shipsTeam.length === 0) {
-        break;
+        continue;
       }
 
       const firstShip = shipsTeam[0].components.get(CShip.id) as CShip;
@@ -72,6 +74,7 @@ export class SDetectShip implements ISystem {
 
       for (let shipEntity of shipsTeam) {
         const entityPos =  shipEntity.components.get(CPosition.id) as CPosition;
+        const entityOrientation = shipEntity.components.get(COrientation.id) as COrientation;
         const ship = shipEntity.components.get(CShip.id) as CShip;
         let sensor = shipEntity.components.get(CShipSensor.id) as CShipSensor;
 
@@ -94,12 +97,12 @@ export class SDetectShip implements ISystem {
           secondaryTargetGroupsByPriority = [ennemyHunters];
         }
 
-        let sensorInfo = this.getSensorInformationOnGroup(entityPos, mainTargetGroupsByPriority);
+        let sensorInfo = this.getSensorInformationOnGroup(entityPos, entityOrientation, mainTargetGroupsByPriority);
         sensor.mainDetectedPos = sensorInfo.position;
         sensor.mainDetectedShipId = sensorInfo.id;
 
         if (secondaryTargetGroupsByPriority.length > 0) {
-          sensorInfo = this.getSensorInformationOnGroup(entityPos, secondaryTargetGroupsByPriority);
+          sensorInfo = this.getSensorInformationOnGroup(entityPos, entityOrientation, secondaryTargetGroupsByPriority);
           sensor.secondaryDetectedPos = sensorInfo.position;
           sensor.secondaryDetectedShipId = sensorInfo.id;
         }
@@ -109,11 +112,11 @@ export class SDetectShip implements ISystem {
     }
   }
 
-  private getSensorInformationOnGroup(position: CPosition, groupsEntity: IEntity[][]): {position: Vect2D | undefined, id: string} {
+  private getSensorInformationOnGroup(position: CPosition, orientation: COrientation, groupsEntity: IEntity[][]): {position: Vect2D | undefined, id: string} {
     let closest: IEntity | undefined = undefined;
     let index = 0;
     while (closest === undefined && index < groupsEntity.length) {
-      closest = this.getClosestInGroupFromPosition(position, groupsEntity[index]);
+      closest = this.getClosestInGroupFromPosition(position, orientation, groupsEntity[index]);
       index++;
     }
 
@@ -132,19 +135,30 @@ export class SDetectShip implements ISystem {
     };
   }
 
-  private getClosestInGroupFromPosition(position: CPosition, groupEntity: IEntity[]): IEntity | undefined {
+  private getClosestInGroupFromPosition(position: CPosition, orientation: COrientation, groupEntity: IEntity[]): IEntity | undefined {
     if (groupEntity.length === 0) {
       return undefined;
     }
 
-    let closest = groupEntity[0];
+    let closest: IEntity | undefined = undefined;
     let minDistance = Infinity;
     for (let entity of groupEntity) {
+
       const pos =  entity.components.get(CPosition.id) as CPosition;
-      const distance = pos.value.distance2(position.value);
-      if (distance < minDistance) {
-        closest = entity;
-        minDistance = distance;
+      const fovInformation: IFieldOfView = {
+        origin: position.value,
+        orientation: orientation.angle,
+        heading: orientation.heading,
+        angle: 120, // In Degree
+        fovLength: 400
+      }
+
+      if (MyMath.isInFieldOfView(fovInformation, pos.value)) {
+        const distance = pos.value.distance2(position.value);
+        if (distance < minDistance) {
+          closest = entity;
+          minDistance = distance;
+        }
       }
     }
     return closest;

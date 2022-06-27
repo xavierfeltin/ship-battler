@@ -26,6 +26,8 @@ export class SRenderShip implements ISystem {
 
         const rb = entity.components.get(CRigidBody.id) as CRigidBody;
         this.renderRigidBody(pos.value, rb.radius, renderer);
+
+        this.drawFieldOfView(pos.value, orientation.angle, 120, 400, renderer);
     }
   }
 
@@ -68,6 +70,41 @@ export class SRenderShip implements ISystem {
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#E10600';
+    ctx.stroke();
+  }
+
+  private drawFieldOfView(pos: Vect2D, orientation: number, fovAngle: number, fovLength: number, renderer: CRenderer) {
+    /*
+    const xOrigin = ship.pos.x;
+    const yOrigin = ship.pos.y;
+    const deltaBehindY = Math.sin((ship.orientation + 180) * Math.PI / 180) * ship.radius;
+    const deltaBehindX = Math.cos((ship.orientation + 180) * Math.PI / 180) * ship.radius;
+    const xShip = xOrigin + deltaBehindX ;
+    const yShip = yOrigin + deltaBehindY ;
+    */
+    const xShip = pos.x;
+    const yShip = pos.y;
+
+    const angleMin = -fovAngle / 2 + orientation;
+    const angleMax = fovAngle / 2 + orientation;
+
+    let ctx = renderer.attr.ctx;
+    const color = "rgba(169, 169, 169)"; //'rgba(107, 142, 35)';
+    ctx.beginPath();
+    ctx.moveTo(xShip, yShip);
+    ctx.lineTo(xShip + Math.cos(angleMin * Math.PI / 180) * fovLength, yShip + Math.sin(angleMin * Math.PI / 180) * fovLength);
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(xShip, yShip);
+    ctx.lineTo(xShip + Math.cos(angleMax * Math.PI / 180) * fovLength, yShip + Math.sin(angleMax * Math.PI / 180) * fovLength);
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.arc(xShip, yShip, fovLength, angleMin * Math.PI / 180, angleMax * Math.PI / 180);
     ctx.stroke();
   }
 }

@@ -242,7 +242,7 @@ export class GameEngine {
         }
 
         if (config.hasShipSensor) {
-            components.set(CShipSensor.id, new CShipSensor(20));
+            components.set(CShipSensor.id, new CShipSensor(30));
         }
         if (config.hasCannons) {
             components.set(CCannon.id, new CCannon(15));
@@ -260,15 +260,31 @@ export class GameEngine {
 
     private createAsteroidField() {
         this.addAsteroid({
-            position: new Vect2D(400, 600)
+            position: new Vect2D(300, 100)
         });
 
         this.addAsteroid({
-            position: new Vect2D(700, 320)
+            position: new Vect2D(900, 700)
         });
 
         this.addAsteroid({
-            position: new Vect2D(200, 200)
+            position: new Vect2D(900, 100)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(300, 700)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(600, 400)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(100, 400)
+        });
+
+        this.addAsteroid({
+            position: new Vect2D(1100, 400)
         });
     }
 
@@ -291,26 +307,17 @@ export class GameEngine {
         const startPositions: Vect2D[] = [];
         if (team === Team.TeamA) {
             startPositions.push(new Vect2D(100, 100));
-
-            this.createHunter(startPositions[0], team, ecs);
-            //startPositions.push(new Vect2D(100, 200));
-            //startPositions.push(new Vect2D(100, 300));
+            startPositions.push(new Vect2D(100, 200));
+            startPositions.push(new Vect2D(100, 300));
         }
         else {
             startPositions.push(new Vect2D(1100, 700));
             startPositions.push(new Vect2D(1100, 600));
             startPositions.push(new Vect2D(1100, 500));
-
-            this.createHunter(startPositions[0], team, ecs);
-            this.createMiner(startPositions[1], team, ecs);
-            this.createBlocker(startPositions[2], team, ecs);
         }
-
-        /*
         this.createHunter(startPositions[0], team, ecs);
         this.createMiner(startPositions[1], team, ecs);
         this.createBlocker(startPositions[2], team, ecs);
-        */
     }
 
     private createHunter(startPosition: Vect2D, team: Team, ecs: ECSManager): void {
