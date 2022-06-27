@@ -42,6 +42,7 @@ import { SFinalizeFrame } from "./ecs/systems/SFinalizeFrame";
 import { SFinalizePhysicsUpdate } from "./ecs/systems/SFinalizePhysicsUpdate";
 import { SNavigate } from "./ecs/systems/SNavigate";
 import { SBounce } from "./ecs/systems/SBounce";
+import { CFieldOfView } from "./ecs/components/CFieldOfView";
 
 export enum GameEnityUniqId {
     Collisions = "collisions",
@@ -65,6 +66,8 @@ export enum ShipRole {
 export interface ShipConfiguration {
     position: Vect2D;
     speed: number;
+    angleOfView: number;
+    depthOfView: number;
     hasShipSensor: boolean;
     hasCannons: boolean;
     hasAsteroidSensor: boolean;
@@ -236,6 +239,7 @@ export class GameEngine {
         components.set(CPosition.id, new CPosition(config.position));
         components.set(COrientation.id, new COrientation(0));
         components.set(CVelocity.id, new CVelocity(new Vect2D(0, 0)));
+        components.set(CFieldOfView.id, new CFieldOfView(config.angleOfView, config.depthOfView));
 
         if (config.hasAsteroidSensor) {
             components.set(CAsteroidSensor.id, new CAsteroidSensor());
@@ -327,6 +331,8 @@ export class GameEngine {
             hasCannons: true,
             hasAsteroidSensor: false,
             speed: 4,
+            angleOfView: 90,
+            depthOfView: 600,
             team: team,
             role: ShipRole.Hunting
         });
@@ -338,6 +344,8 @@ export class GameEngine {
             hasShipSensor: false,
             hasCannons: false,
             hasAsteroidSensor: true,
+            angleOfView: 120,
+            depthOfView: 400,
             speed: 4,
             team: team,
             role: ShipRole.Mining
@@ -351,6 +359,8 @@ export class GameEngine {
             hasCannons: false,
             hasAsteroidSensor: false,
             speed: 3,
+            angleOfView: 360,
+            depthOfView: 500,
             team: team,
             role: ShipRole.Blocking
         });

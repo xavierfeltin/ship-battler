@@ -5,7 +5,7 @@ export interface IFieldOfView {
     orientation: number;
     heading: Vect2D;
     angle: number; // In Degree
-    fovLength: number;
+    fovDepth: number;
 }
 
 export class MyMath {
@@ -67,7 +67,7 @@ export class MyMath {
         // Compare angle between heading and target with field of view angle
         const vShipTarget = Vect2D.sub(targetPosition, fov.origin);
         const distance = vShipTarget.norm;
-        if (distance > fov.fovLength) {
+        if (distance > fov.fovDepth) {
             return false;
         }
 

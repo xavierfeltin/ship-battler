@@ -7,6 +7,7 @@ import { CAsteroidSensor } from '../components/CAsteroidSensor';
 import { IFieldOfView, MyMath } from '../../utils/MyMath';
 import { Vect2D } from '../../utils/Vect2D';
 import { COrientation } from '../components/COrientation';
+import { CFieldOfView } from '../components/CFieldOfView';
 
 export class SDetectAsteroid implements ISystem {
   public id = 'DetectAsteroid';
@@ -23,6 +24,7 @@ export class SDetectAsteroid implements ISystem {
     for (let ship of entities) {
       const shipPos =  ship.components.get(CPosition.id) as CPosition;
       const shipOrientation =  ship.components.get(COrientation.id) as COrientation;
+      const shipFOV = ship.components.get(CFieldOfView.id) as CFieldOfView;
       let minDistance = Infinity;
       let targetPos: Vect2D | undefined = undefined;
       let targetName = "";
@@ -33,8 +35,8 @@ export class SDetectAsteroid implements ISystem {
           origin: shipPos.value,
           orientation: shipOrientation.angle,
           heading: shipOrientation.heading,
-          angle: 120, // In Degree
-          fovLength: 400
+          angle: shipFOV.angle, // In Degree
+          fovDepth: shipFOV.depth
         };
 
         if (MyMath.isInFieldOfView(fovInformation, asteroidPos.value)) {

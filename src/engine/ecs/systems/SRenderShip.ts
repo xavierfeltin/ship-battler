@@ -6,6 +6,8 @@ import { CRenderer } from '../components/CRenderer';
 import { ISystem } from '../ISystem';
 import { CShip } from '../components/CShip';
 import { CRigidBody } from '../components/CRigidBody';
+import { cp } from 'fs';
+import { CFieldOfView } from '../components/CFieldOfView';
 
 export class SRenderShip implements ISystem {
   public id = 'RenderShip';
@@ -21,13 +23,14 @@ export class SRenderShip implements ISystem {
     for (let entity of entities) {
         const pos = entity.components.get(CPosition.id) as CPosition;
         const orientation = entity.components.get(COrientation.id) as COrientation;
+        const fov = entity.components.get(CFieldOfView.id) as CFieldOfView;
         const renderer = entity.components.get(CRenderer.id) as CRenderer;
         this.render(pos.value, orientation.angle, renderer);
 
         const rb = entity.components.get(CRigidBody.id) as CRigidBody;
         this.renderRigidBody(pos.value, rb.radius, renderer);
 
-        this.drawFieldOfView(pos.value, orientation.angle, 120, 400, renderer);
+        this.drawFieldOfView(pos.value, orientation.angle, fov.angle, fov.depth, renderer);
     }
   }
 
@@ -90,17 +93,20 @@ export class SRenderShip implements ISystem {
 
     let ctx = renderer.attr.ctx;
     const color = "rgba(169, 169, 169)"; //'rgba(107, 142, 35)';
-    ctx.beginPath();
-    ctx.moveTo(xShip, yShip);
-    ctx.lineTo(xShip + Math.cos(angleMin * Math.PI / 180) * fovLength, yShip + Math.sin(angleMin * Math.PI / 180) * fovLength);
-    ctx.strokeStyle = color;
-    ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(xShip, yShip);
-    ctx.lineTo(xShip + Math.cos(angleMax * Math.PI / 180) * fovLength, yShip + Math.sin(angleMax * Math.PI / 180) * fovLength);
-    ctx.strokeStyle = color;
-    ctx.stroke();
+    if (fovAngle !== 360) {
+      ctx.beginPath();
+      ctx.moveTo(xShip, yShip);
+      ctx.lineTo(xShip + Math.cos(angleMin * Math.PI / 180) * fovLength, yShip + Math.sin(angleMin * Math.PI / 180) * fovLength);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(xShip, yShip);
+      ctx.lineTo(xShip + Math.cos(angleMax * Math.PI / 180) * fovLength, yShip + Math.sin(angleMax * Math.PI / 180) * fovLength);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    }
 
     ctx.beginPath();
     ctx.strokeStyle = color;
